@@ -1,0 +1,69 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Go workspace file
+go.work
+
+# Built binaries
+transire-cli
+transire
+simple-api
+todo-app
+
+# Build artifacts
+/dist/
+/.transire/
+*.zip
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# CDK generated files
+cdk.out/
+node_modules/
+*.js
+*.d.ts
+!jest.config.js
+package-lock.json
+yarn.lock
+
+# AWS credentials (just in case)
+.aws/
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Debug files
+__debug_bin
+debug
+
+# Air (hot reload) temp files
+tmp/
