@@ -90,6 +90,15 @@ The CLA workflow (`.github/workflows/cla.yml`) automatically handles:
 - **Update bot allowlists** if new automation tools are added
 - **Review and update CLA text** if legal requirements change
 
+## Current Configuration
+
+**Transire uses local CLA signature storage** for simplicity:
+
+- **Signatures stored in**: `cla-signatures/cla.json` (in this repository)
+- **No external dependencies**: No separate repository or personal access tokens needed
+- **Automatic backup**: CLA signatures are backed up as part of normal repository backups
+- **Version controlled**: All signature changes are tracked in git history
+
 ### Optional Enhancements
 
 Consider these additional automation options:
@@ -99,6 +108,7 @@ Consider these additional automation options:
 For organizations with multiple repositories, you can:
 - Create a dedicated `cla-signatures` repository
 - Update the workflow to use `remote-organization-name` and `remote-repository-name`
+- Add `PERSONAL_ACCESS_TOKEN` secret with repository write permissions
 - Centralize all CLA signatures across projects
 
 #### 2. Integration with External CLA Services
