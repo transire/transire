@@ -1,0 +1,53 @@
+# Transire configuration for TODO app example
+name: todo-app
+language: go
+cloud: aws
+runtime: lambda
+iac: cdk
+ci: github
+
+# Lambda function configuration
+lambda:
+  architecture: arm64
+  timeout_seconds: 30
+  memory_mb: 512
+
+# Single function for all handlers
+functions:
+  main:
+    include:
+      - http_handlers: "*"
+      - queue_handlers: "*"
+      - schedule_handlers: "*"
+
+# Environment variables
+environment:
+  LOG_LEVEL: info
+  SERVICE_NAME: todo-app
+
+# Queue-specific configuration
+queues:
+  todo-reminders:
+    visibility_timeout_seconds: 30
+    max_receive_count: 3
+    batch_size: 10
+  todo-notifications:
+    visibility_timeout_seconds: 60
+    max_receive_count: 5
+    batch_size: 10
+
+# Schedule-specific configuration
+schedules:
+  cleanup-completed-todos:
+    timezone: "UTC"
+    enabled: true
+  daily-todo-summary:
+    timezone: "UTC"
+    enabled: true
+
+# Development settings
+development:
+  http_port: 3000
+  queue_port: 4000
+  auto_reload: true
+  log_level: debug
