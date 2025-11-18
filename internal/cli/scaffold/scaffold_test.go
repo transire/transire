@@ -14,8 +14,8 @@ import (
 )
 
 func TestScaffolder_GenerateGoMod_Issue6(t *testing.T) {
-	// Test for Issue #6: Generated go.mod references non-existent v0.1.0 version
-	t.Run("should not generate invalid v0.1.0 version", func(t *testing.T) {
+	// Test for Issue #6: Generated go.mod should use proper semantic version
+	t.Run("should generate valid v0.1.0 version", func(t *testing.T) {
 		tmpDir := t.TempDir()
 
 		config := &transire.Config{
@@ -43,14 +43,13 @@ func TestScaffolder_GenerateGoMod_Issue6(t *testing.T) {
 
 		goModContent := string(content)
 
-		// The problematic line should NOT exist
-		if strings.Contains(goModContent, "github.com/transire/transire v0.1.0") {
-			t.Errorf("go.mod should not contain non-existent version v0.1.0")
+		// Should contain the proper semantic version
+		if !strings.Contains(goModContent, "github.com/transire/transire v0.1.0") {
+			t.Errorf("go.mod should contain semantic version v0.1.0")
 			t.Logf("Generated go.mod content:\n%s", goModContent)
 		}
 
 		// Should contain a valid version reference
-		// For now, we expect this test to fail until we fix the issue
 		if !strings.Contains(goModContent, "github.com/transire/transire") {
 			t.Errorf("go.mod should contain github.com/transire/transire dependency")
 		}

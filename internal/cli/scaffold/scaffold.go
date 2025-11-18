@@ -89,7 +89,7 @@ go 1.21
 
 require (
 	github.com/go-chi/chi/v5 v5.0.12
-	github.com/transire/transire v0.0.0-20251118153525-9a0c60b29cf0
+	github.com/transire/transire v0.1.0
 )
 `, s.config.Name)
 
