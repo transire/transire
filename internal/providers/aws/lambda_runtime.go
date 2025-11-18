@@ -3,7 +3,7 @@ package aws
 import (
 	"context"
 
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // LambdaRuntime wraps the core Lambda runtime with AWS-specific functionality

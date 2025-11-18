@@ -1,4 +1,4 @@
-module github.com/transire-org/transire
+module github.com/transire/transire
 
 go 1.21
 

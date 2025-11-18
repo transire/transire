@@ -72,4 +72,7 @@ tmp/
 .serena/
 .claude/
 
+# Personal development scripts and prompts
 claude.sh
+SYSTEM_PROMPT.md
+DESIGN_PROMPT.md

@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // LambdaBuilder builds artifacts for AWS Lambda deployment

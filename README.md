@@ -37,7 +37,7 @@ func main() {
 ### 1. Install the CLI
 
 ```bash
-go install github.com/transire-org/transire/cmd/transire@latest
+go install github.com/transire/transire/cmd/transire@latest
 ```
 
 ### 2. Create a New Project
@@ -60,7 +60,7 @@ import (
 
     "github.com/go-chi/chi/v5"
     "github.com/go-chi/chi/v5/middleware"
-    "github.com/transire-org/transire/pkg/transire"
+    "github.com/transire/transire/pkg/transire"
 )
 
 func main() {
@@ -524,10 +524,10 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ## Links
 
-- **Documentation**: [docs.transire.org](https://docs.transire.org) (coming soon)
+- **Documentation**: [transire.github.io](https://transire.github.io/transire) (coming soon)
 - **Examples**: [./examples](./examples)
-- **Issues**: [GitHub Issues](https://github.com/transire-org/transire/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/transire-org/transire/discussions)
+- **Issues**: [GitHub Issues](https://github.com/transire/transire/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/transire/transire/discussions)
 
 ---
 

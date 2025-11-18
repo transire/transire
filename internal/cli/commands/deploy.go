@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // NewDeployCommand creates the deploy command
