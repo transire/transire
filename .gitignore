@@ -67,3 +67,9 @@ debug
 
 # Air (hot reload) temp files
 tmp/
+
+# IDE assistant files
+.serena/
+.claude/
+
+claude.sh
