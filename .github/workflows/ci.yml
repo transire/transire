@@ -1,5 +1,8 @@
 name: CI
 
+# This workflow runs the same checks as the local pre-commit hook
+# to ensure consistency between local development and CI
+
 on:
   push:
     branches: [main]
@@ -34,7 +37,7 @@ jobs:
         run: go vet ./...
 
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -race -timeout=2m -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload coverage to Codecov
         if: matrix.go-version == '1.23'
@@ -86,8 +89,8 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: latest
-          args: --timeout=5m
+          version: v2.6.1  # Match the version pre-commit hook uses
+          args: --timeout=3m  # Match pre-commit hook timeout
 
   format:
     name: Format Check
@@ -104,8 +107,10 @@ jobs:
 
       - name: Check formatting
         run: |
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          # Exclude node_modules, vendor, and template files like the pre-commit hook
+          UNFORMATTED=$(gofmt -l . | grep -v "node_modules/" | grep -v "vendor/" | grep -v ".template.go" || true)
+          if [ -n "$UNFORMATTED" ]; then
             echo "The following files are not formatted:"
-            gofmt -s -l .
+            echo "$UNFORMATTED"
             exit 1
           fi
