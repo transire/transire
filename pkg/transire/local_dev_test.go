@@ -39,7 +39,9 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		_ = app.Run(ctx)
+		if err := app.Run(ctx); err != nil && ctx.Err() == nil {
+			t.Errorf("App.Run failed: %v", err)
+		}
 	}()
 
 	// Wait for server to start
@@ -49,13 +51,19 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 	messageBody := map[string]string{
 		"test": "data",
 	}
-	bodyJSON, _ := json.Marshal(messageBody)
+	bodyJSON, err := json.Marshal(messageBody)
+	if err != nil {
+		t.Fatalf("Failed to marshal message body: %v", err)
+	}
 
 	req := devQueueMessageRequest{
 		QueueName: "test-queue",
 		Message:   string(bodyJSON),
 	}
-	reqJSON, _ := json.Marshal(req)
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("Failed to marshal request: %v", err)
+	}
 
 	resp, err := http.Post("http://localhost:3001/__dev/queues/send", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {
@@ -113,7 +121,9 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		_ = app.Run(ctx)
+		if err := app.Run(ctx); err != nil && ctx.Err() == nil {
+			t.Errorf("App.Run failed: %v", err)
+		}
 	}()
 
 	// Wait for server to start
@@ -123,7 +133,10 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 	req := devScheduleExecuteRequest{
 		ScheduleName: "test-schedule",
 	}
-	reqJSON, _ := json.Marshal(req)
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("Failed to marshal request: %v", err)
+	}
 
 	resp, err := http.Post("http://localhost:3002/__dev/schedules/execute", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {

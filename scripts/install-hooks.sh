@@ -42,7 +42,7 @@ if ! command -v golangci-lint &> /dev/null; then
     echo "The pre-commit hook will work without it, but it's recommended for better linting."
     echo ""
     echo "To install golangci-lint:"
-    echo "  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$(go env GOPATH)/bin"
+    echo "  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b \$(go env GOPATH)/bin v1.62.2"
     echo ""
 fi
 
