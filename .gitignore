@@ -17,8 +17,8 @@ go.work
 # Built binaries
 transire-cli
 transire
-simple-api
-todo-app
+/simple-api
+/todo-app
 
 # Build artifacts
 /dist/

@@ -89,7 +89,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: v2.6.1  # Match the version pre-commit hook uses
+          version: v1.62.2  # Latest stable version
           args: --timeout=3m  # Match pre-commit hook timeout
 
   format:
