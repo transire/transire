@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/transire-org/transire/internal/cli/discovery"
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/internal/cli/discovery"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // NewDevCommand creates the dev command group
@@ -164,7 +164,10 @@ Examples:
 				"queue_name": queueName,
 				"message":    messageBody,
 			}
-			payloadJSON, _ := json.Marshal(payload)
+			payloadJSON, err := json.Marshal(payload)
+			if err != nil {
+				return fmt.Errorf("failed to marshal payload: %w", err)
+			}
 
 			resp, err := http.Post(devAPIURL, "application/json", bytes.NewBuffer(payloadJSON))
 			if err != nil {
@@ -327,7 +330,10 @@ Examples:
 			payload := map[string]string{
 				"schedule_name": scheduleName,
 			}
-			payloadJSON, _ := json.Marshal(payload)
+			payloadJSON, err := json.Marshal(payload)
+			if err != nil {
+				return fmt.Errorf("failed to marshal payload: %w", err)
+			}
 
 			resp, err := http.Post(devAPIURL, "application/json", bytes.NewBuffer(payloadJSON))
 			if err != nil {

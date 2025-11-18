@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // Provider implements the AWS cloud provider

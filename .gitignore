@@ -17,8 +17,8 @@ go.work
 # Built binaries
 transire-cli
 transire
-simple-api
-todo-app
+/simple-api
+/todo-app
 
 # Build artifacts
 /dist/
@@ -72,4 +72,7 @@ tmp/
 .serena/
 .claude/
 
+# Personal development scripts and prompts
 claude.sh
+SYSTEM_PROMPT.md
+DESIGN_PROMPT.md

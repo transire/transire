@@ -1,0 +1,51 @@
+# Transire configuration for simple API example
+name: simple-api
+language: go
+cloud: aws
+runtime: lambda
+iac: cdk
+ci: github
+
+# Lambda function configuration
+lambda:
+  architecture: arm64
+  timeout_seconds: 30
+  memory_mb: 256
+
+# Single function for all handlers (default)
+functions:
+  main:
+    include:
+      - http_handlers: "*"
+      - queue_handlers: "*"
+      - schedule_handlers: "*"
+
+# Environment variables
+environment:
+  LOG_LEVEL: info
+  SERVICE_NAME: simple-api
+  DATABASE_URL: ${DATABASE_URL}
+
+# Queue-specific configuration
+queues:
+  email-queue:
+    visibility_timeout_seconds: 30
+    max_receive_count: 3
+    batch_size: 10
+  notification-queue:
+    visibility_timeout_seconds: 60
+    max_receive_count: 5
+    batch_size: 5
+
+# Schedule-specific configuration
+schedules:
+  daily-cleanup:
+    timezone: "UTC"
+    enabled: true
+
+# Development settings
+development:
+  http_port: 3000
+  queue_port: 4000
+  auto_reload: true
+  log_level: debug

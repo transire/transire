@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/transire-org/transire/internal/cli/discovery"
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/internal/cli/discovery"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // NewBuildCommand creates the build command

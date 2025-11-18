@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/transire-org/transire/internal/cli/commands"
+	"github.com/transire/transire/internal/cli/commands"
 )
 
 var version = "dev" // Set by build system

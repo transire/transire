@@ -17,17 +17,15 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 	config.Development.HTTPPort = 3001
 	app := New(WithConfig(config))
 
-	// Track if handler was called
-	handlerCalled := false
-	var receivedMessage Message
+	// Track if handler was called (use channel for synchronization)
+	handlerCalled := make(chan Message, 1)
 
 	// Register a test queue handler
 	testHandler := &callbackQueueHandler{
 		queueName: "test-queue",
 		handleFunc: func(ctx context.Context, messages []Message) ([]string, error) {
-			handlerCalled = true
 			if len(messages) > 0 {
-				receivedMessage = messages[0]
+				handlerCalled <- messages[0]
 			}
 			return nil, nil
 		},
@@ -39,7 +37,9 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		_ = app.Run(ctx)
+		if err := app.Run(ctx); err != nil && ctx.Err() == nil {
+			t.Errorf("App.Run failed: %v", err)
+		}
 	}()
 
 	// Wait for server to start
@@ -49,13 +49,19 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 	messageBody := map[string]string{
 		"test": "data",
 	}
-	bodyJSON, _ := json.Marshal(messageBody)
+	bodyJSON, err := json.Marshal(messageBody)
+	if err != nil {
+		t.Fatalf("Failed to marshal message body: %v", err)
+	}
 
 	req := devQueueMessageRequest{
 		QueueName: "test-queue",
 		Message:   string(bodyJSON),
 	}
-	reqJSON, _ := json.Marshal(req)
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("Failed to marshal request: %v", err)
+	}
 
 	resp, err := http.Post("http://localhost:3001/__dev/queues/send", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {
@@ -69,18 +75,14 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
 	}
 
-	// Wait for async processing
-	time.Sleep(100 * time.Millisecond)
-
-	// Verify handler was called
-	if !handlerCalled {
-		t.Error("Queue handler was not called")
-	}
-
-	if receivedMessage == nil {
-		t.Error("No message received by handler")
-	} else if string(receivedMessage.Body()) != string(bodyJSON) {
-		t.Errorf("Expected message body %s, got %s", bodyJSON, receivedMessage.Body())
+	// Wait for handler to be called
+	select {
+	case receivedMessage := <-handlerCalled:
+		if string(receivedMessage.Body()) != string(bodyJSON) {
+			t.Errorf("Expected message body %s, got %s", bodyJSON, receivedMessage.Body())
+		}
+	case <-time.After(2 * time.Second):
+		t.Error("Queue handler was not called within timeout")
 	}
 }
 
@@ -92,17 +94,15 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 	config.Development.HTTPPort = 3002
 	app := New(WithConfig(config))
 
-	// Track if handler was called
-	handlerCalled := false
-	var receivedEvent ScheduleEvent
+	// Track if handler was called (use channel for synchronization)
+	handlerCalled := make(chan ScheduleEvent, 1)
 
 	// Register a test schedule handler
 	testHandler := &callbackScheduleHandler{
 		name:     "test-schedule",
 		schedule: "0 * * * *",
 		handleFunc: func(ctx context.Context, event ScheduleEvent) error {
-			handlerCalled = true
-			receivedEvent = event
+			handlerCalled <- event
 			return nil
 		},
 	}
@@ -113,7 +113,9 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 	defer cancel()
 
 	go func() {
-		_ = app.Run(ctx)
+		if err := app.Run(ctx); err != nil && ctx.Err() == nil {
+			t.Errorf("App.Run failed: %v", err)
+		}
 	}()
 
 	// Wait for server to start
@@ -123,7 +125,10 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 	req := devScheduleExecuteRequest{
 		ScheduleName: "test-schedule",
 	}
-	reqJSON, _ := json.Marshal(req)
+	reqJSON, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("Failed to marshal request: %v", err)
+	}
 
 	resp, err := http.Post("http://localhost:3002/__dev/schedules/execute", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {
@@ -137,16 +142,14 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
 	}
 
-	// Wait for async processing
-	time.Sleep(100 * time.Millisecond)
-
-	// Verify handler was called
-	if !handlerCalled {
-		t.Error("Schedule handler was not called")
-	}
-
-	if receivedEvent.Name != "test-schedule" {
-		t.Errorf("Expected event name 'test-schedule', got '%s'", receivedEvent.Name)
+	// Wait for handler to be called
+	select {
+	case receivedEvent := <-handlerCalled:
+		if receivedEvent.Name != "test-schedule" {
+			t.Errorf("Expected event name 'test-schedule', got '%s'", receivedEvent.Name)
+		}
+	case <-time.After(2 * time.Second):
+		t.Error("Schedule handler was not called within timeout")
 	}
 }
 

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/transire-org/transire/internal/cli/scaffold"
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/internal/cli/scaffold"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // NewInitCommand creates the init command

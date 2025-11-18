@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // Project represents a discovered Transire project

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // Scaffolder generates project structure
@@ -89,10 +89,10 @@ go 1.21
 
 require (
 	github.com/go-chi/chi/v5 v5.0.12
-	github.com/transire-org/transire v0.1.0
+	github.com/transire/transire v0.1.0
 )
 
-replace github.com/transire-org/transire => %s
+replace github.com/transire/transire => %s
 `, s.config.Name, replacePath)
 
 	return s.writeFile("go.mod", content)
@@ -134,7 +134,7 @@ func (s *Scaffolder) findTransireRoot(startDir string) string {
 		if _, err := os.Stat(goModPath); err == nil {
 			// Read go.mod to check if it's the transire module
 			if content, err := os.ReadFile(goModPath); err == nil {
-				if strings.Contains(string(content), "module github.com/transire-org/transire") {
+				if strings.Contains(string(content), "module github.com/transire/transire") {
 					return dir
 				}
 			}
@@ -158,7 +158,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 func main() {
@@ -371,7 +371,7 @@ jobs:
     - name: Install Transire CLI
       run: |
         # TODO: Install Transire CLI from releases
-        go install github.com/transire-org/transire/cmd/transire@latest
+        go install github.com/transire/transire/cmd/transire@latest
 
     - name: Build artifacts
       run: transire build

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // CDKGenerator generates AWS CDK TypeScript infrastructure

@@ -62,7 +62,7 @@ This installs a pre-commit hook that automatically runs:
 ### 3. Install golangci-lint (Optional but Recommended)
 
 ```bash
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.62.2
 ```
 
 Or on macOS:

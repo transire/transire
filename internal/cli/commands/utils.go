@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/transire-org/transire/internal/providers/aws"
-	"github.com/transire-org/transire/pkg/transire"
+	"github.com/transire/transire/internal/providers/aws"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // createProvider creates the appropriate cloud provider

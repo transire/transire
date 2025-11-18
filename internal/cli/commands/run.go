@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/transire-org/transire/internal/cli/runner"
+	"github.com/transire/transire/internal/cli/runner"
 )
 
 // NewRunCommand creates the run command
