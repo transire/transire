@@ -212,10 +212,10 @@ func TestExtractScheduleName(t *testing.T) {
 	runtime := &lambdaRuntime{}
 
 	tests := []struct {
-		name           string
-		event          events.CloudWatchEvent
-		expectedName   string
-		description    string
+		name         string
+		event        events.CloudWatchEvent
+		expectedName string
+		description  string
 	}{
 		{
 			name: "should extract handler name from rule with standard naming",

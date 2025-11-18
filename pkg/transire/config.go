@@ -22,9 +22,9 @@ type Config struct {
 	Environment map[string]string         `yaml:"environment"`
 	VPC         *VPCConfig                `yaml:"vpc,omitempty"`
 
-	ExistingResources ExistingResourcesConfig `yaml:"existing_resources"`
-	Queues           map[string]QueueConfig   `yaml:"queues"`
-	Schedules        map[string]ScheduleConfig `yaml:"schedules"`
+	ExistingResources ExistingResourcesConfig   `yaml:"existing_resources"`
+	Queues            map[string]QueueConfig    `yaml:"queues"`
+	Schedules         map[string]ScheduleConfig `yaml:"schedules"`
 
 	CDKExtensions []ExtensionConfig `yaml:"cdk_extensions"`
 	Development   DevelopmentConfig `yaml:"development"`
@@ -34,16 +34,16 @@ type Config struct {
 type LambdaConfig struct {
 	Architecture   string `yaml:"architecture"`
 	TimeoutSeconds int    `yaml:"timeout_seconds"`
-	MemoryMB      int    `yaml:"memory_mb"`
+	MemoryMB       int    `yaml:"memory_mb"`
 }
 
 // FunctionConfig defines a function group
 type FunctionConfig struct {
 	Include             []IncludeSpec     `yaml:"include"`
-	MemoryMB           int               `yaml:"memory_mb,omitempty"`
-	TimeoutSeconds     int               `yaml:"timeout_seconds,omitempty"`
+	MemoryMB            int               `yaml:"memory_mb,omitempty"`
+	TimeoutSeconds      int               `yaml:"timeout_seconds,omitempty"`
 	ReservedConcurrency *int              `yaml:"reserved_concurrency,omitempty"`
-	Environment        map[string]string `yaml:"environment,omitempty"`
+	Environment         map[string]string `yaml:"environment,omitempty"`
 }
 
 // VPCConfig configures VPC settings
@@ -55,8 +55,8 @@ type VPCConfig struct {
 // ExistingResourcesConfig references existing AWS resources
 type ExistingResourcesConfig struct {
 	DynamoDBTables []ExistingResource `yaml:"dynamodb_tables"`
-	S3Buckets     []ExistingResource `yaml:"s3_buckets"`
-	Secrets       []ExistingResource `yaml:"secrets"`
+	S3Buckets      []ExistingResource `yaml:"s3_buckets"`
+	Secrets        []ExistingResource `yaml:"secrets"`
 }
 
 // ExistingResource represents a reference to existing infrastructure

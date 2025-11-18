@@ -166,20 +166,20 @@ func (r *lambdaRuntime) isAPIGatewayEvent(event json.RawMessage) bool {
 	eventStr := string(event)
 	hasRequestContext := strings.Contains(eventStr, "requestContext")
 	isV2 := strings.Contains(eventStr, "\"version\"") && strings.Contains(eventStr, "\"2.0\"") // API Gateway v2 HTTP API
-	isV1REST := strings.Contains(eventStr, "httpMethod")                                        // API Gateway v1 REST API
-	hasAPIGateway := strings.Contains(eventStr, "apigateway")                                   // Other API Gateway formats
+	isV1REST := strings.Contains(eventStr, "httpMethod")                                       // API Gateway v1 REST API
+	hasAPIGateway := strings.Contains(eventStr, "apigateway")                                  // Other API Gateway formats
 
 	return hasRequestContext && (isV2 || isV1REST || hasAPIGateway)
 }
 
 func (r *lambdaRuntime) isSQSEvent(event json.RawMessage) bool {
 	return strings.Contains(string(event), "Records") && strings.Contains(string(event), "eventSource") &&
-		   strings.Contains(string(event), "aws:sqs")
+		strings.Contains(string(event), "aws:sqs")
 }
 
 func (r *lambdaRuntime) isEventBridgeEvent(event json.RawMessage) bool {
 	return strings.Contains(string(event), "source") && strings.Contains(string(event), "detail-type") &&
-		   strings.Contains(string(event), "aws.events")
+		strings.Contains(string(event), "aws.events")
 }
 
 // Conversion helpers

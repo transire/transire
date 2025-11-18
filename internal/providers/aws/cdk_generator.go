@@ -252,8 +252,8 @@ func (g *CDKGenerator) buildStackData(config transire.IaCConfig) interface{} {
 		HasHTTPHandlers   bool
 		MainFunctionVar   string
 		MainFunctionAlias string
-		Queues           []QueueData
-		Schedules        []ScheduleData
+		Queues            []QueueData
+		Schedules         []ScheduleData
 	}{
 		StackClassName: toPascalCase(config.StackName) + "Stack",
 	}
@@ -268,8 +268,8 @@ func (g *CDKGenerator) buildStackData(config transire.IaCConfig) interface{} {
 			PascalName:     toPascalCase(name),
 			AliasVarName:   toCamelCase(name) + "Alias",
 			TimeoutSeconds: spec.TimeoutSeconds,
-			MemoryMB:      spec.MemoryMB,
-			Environment:   spec.Environment,
+			MemoryMB:       spec.MemoryMB,
+			Environment:    spec.Environment,
 		}
 		if funcData.TimeoutSeconds == 0 {
 			funcData.TimeoutSeconds = 30
@@ -295,13 +295,13 @@ func (g *CDKGenerator) buildStackData(config transire.IaCConfig) interface{} {
 	for _, handler := range config.QueueHandlers {
 		queueData := QueueData{
 			Name:                     handler.QueueName,
-			VarName:                 toCamelCase(handler.QueueName) + "Queue",
-			PascalName:              toPascalCase(handler.QueueName),
-			FunctionVar:             functionVars[handler.Function],
-			FunctionAlias:           functionAliases[handler.Function],
+			VarName:                  toCamelCase(handler.QueueName) + "Queue",
+			PascalName:               toPascalCase(handler.QueueName),
+			FunctionVar:              functionVars[handler.Function],
+			FunctionAlias:            functionAliases[handler.Function],
 			VisibilityTimeoutSeconds: handler.Config.VisibilityTimeoutSeconds,
-			MaxReceiveCount:         handler.Config.MaxReceiveCount,
-			BatchSize:              handler.Config.BatchSize,
+			MaxReceiveCount:          handler.Config.MaxReceiveCount,
+			BatchSize:                handler.Config.BatchSize,
 		}
 		data.Queues = append(data.Queues, queueData)
 	}
@@ -329,19 +329,19 @@ type FunctionData struct {
 	PascalName     string
 	AliasVarName   string
 	TimeoutSeconds int
-	MemoryMB      int
-	Environment   map[string]string
+	MemoryMB       int
+	Environment    map[string]string
 }
 
 type QueueData struct {
 	Name                     string
-	VarName                 string
-	PascalName              string
-	FunctionVar             string
-	FunctionAlias           string
+	VarName                  string
+	PascalName               string
+	FunctionVar              string
+	FunctionAlias            string
 	VisibilityTimeoutSeconds int
-	MaxReceiveCount         int
-	BatchSize              int
+	MaxReceiveCount          int
+	BatchSize                int
 }
 
 type ScheduleData struct {

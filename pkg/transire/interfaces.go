@@ -16,10 +16,10 @@ type HTTPHandler interface {
 
 // HTTPHandlerMetadata provides routing and configuration information
 type HTTPHandlerMetadata struct {
-	Methods     []string          // HTTP methods (GET, POST, etc.)
-	Path        string           // Route path
-	Middlewares []Middleware     // Applied middlewares
-	Timeout     time.Duration    // Request timeout
+	Methods     []string      // HTTP methods (GET, POST, etc.)
+	Path        string        // Route path
+	Middlewares []Middleware  // Applied middlewares
+	Timeout     time.Duration // Request timeout
 }
 
 // Middleware represents HTTP middleware
@@ -75,19 +75,19 @@ type ScheduleEvent struct {
 // QueueConfig configures queue behavior
 type QueueConfig struct {
 	VisibilityTimeoutSeconds int  `yaml:"visibility_timeout_seconds"` // How long messages are invisible after delivery
-	MaxReceiveCount         int   `yaml:"max_receive_count"`          // Max delivery attempts before DLQ
-	BatchSize              int    `yaml:"batch_size"`                 // Max messages per batch
-	WaitTimeSeconds        int    `yaml:"wait_time_seconds"`          // Long polling wait time
-	FIFO                   bool   `yaml:"fifo"`                       // Whether queue is FIFO
+	MaxReceiveCount          int  `yaml:"max_receive_count"`          // Max delivery attempts before DLQ
+	BatchSize                int  `yaml:"batch_size"`                 // Max messages per batch
+	WaitTimeSeconds          int  `yaml:"wait_time_seconds"`          // Long polling wait time
+	FIFO                     bool `yaml:"fifo"`                       // Whether queue is FIFO
 }
 
 // ScheduleConfig configures scheduled task behavior
 type ScheduleConfig struct {
-	Timezone        string        `yaml:"timezone"`         // Timezone for cron expression
-	Enabled         bool          `yaml:"enabled"`          // Whether schedule is enabled
-	TimeoutSeconds  int           `yaml:"timeout_seconds"`  // Execution timeout
-	RetryAttempts   int           `yaml:"retry_attempts"`   // Number of retry attempts on failure
-	RetryDelay      time.Duration `yaml:"retry_delay"`      // Delay between retries
+	Timezone       string        `yaml:"timezone"`        // Timezone for cron expression
+	Enabled        bool          `yaml:"enabled"`         // Whether schedule is enabled
+	TimeoutSeconds int           `yaml:"timeout_seconds"` // Execution timeout
+	RetryAttempts  int           `yaml:"retry_attempts"`  // Number of retry attempts on failure
+	RetryDelay     time.Duration `yaml:"retry_delay"`     // Delay between retries
 }
 
 // Option configures an App instance
@@ -210,10 +210,10 @@ type ScheduleHandlerSpec struct {
 // FunctionGroupSpec defines how to group handlers into functions
 type FunctionGroupSpec struct {
 	Include             IncludeSpec
-	MemoryMB           int
-	TimeoutSeconds     int
+	MemoryMB            int
+	TimeoutSeconds      int
 	ReservedConcurrency *int
-	Environment        map[string]string
+	Environment         map[string]string
 }
 
 // IncludeSpec defines which handlers to include in a function group

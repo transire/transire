@@ -153,7 +153,7 @@ func (h *devHandler) handleQueuesList(w http.ResponseWriter, r *http.Request) {
 		config := handler.Config()
 		queues = append(queues, map[string]interface{}{
 			"name":                       handler.QueueName(),
-			"batch_size":                config.BatchSize,
+			"batch_size":                 config.BatchSize,
 			"visibility_timeout_seconds": config.VisibilityTimeoutSeconds,
 			"max_receive_count":          config.MaxReceiveCount,
 			"wait_time_seconds":          config.WaitTimeSeconds,
@@ -196,8 +196,8 @@ func (h *devHandler) handleDevHealth(w http.ResponseWriter, r *http.Request) {
 	schedHandlers := h.app.GetScheduleHandlers()
 
 	response := map[string]interface{}{
-		"status":          "healthy",
-		"queue_handlers":  len(queueHandlers),
+		"status":            "healthy",
+		"queue_handlers":    len(queueHandlers),
 		"schedule_handlers": len(schedHandlers),
 	}
 

@@ -194,7 +194,7 @@ func main() {
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	html := ` + "`" + `<!DOCTYPE html>
+	html := `+"`"+`<!DOCTYPE html>
 <html>
 <head>
     <title>%s</title>
@@ -218,14 +218,14 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
         </ul>
     </div>
 </body>
-</html>` + "`" + `
+</html>`+"`"+`
 	w.Write([]byte(html))
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(` + "`" + `{"status": "ok", "service": "%s"}` + "`" + `))
+	w.Write([]byte(`+"`"+`{"status": "ok", "service": "%s"}`+"`"+`))
 }
 `, s.config.Name, s.config.Name, s.config.Name)
 

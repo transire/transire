@@ -10,7 +10,7 @@ type RuntimeType string
 const (
 	RuntimeLocal     RuntimeType = "local"
 	RuntimeAWSLambda RuntimeType = "aws_lambda"
-	RuntimeGCPRun    RuntimeType = "gcp_cloudrun"  // Future
+	RuntimeGCPRun    RuntimeType = "gcp_cloudrun"   // Future
 	RuntimeAzureFunc RuntimeType = "azure_function" // Future
 )
 

@@ -86,7 +86,7 @@ func TestRegisterScheduleHandler(t *testing.T) {
 	app := New()
 
 	handler := &testScheduleHandler{
-		name: "test-schedule",
+		name:     "test-schedule",
 		schedule: "0 * * * *",
 	}
 
@@ -157,8 +157,8 @@ func (h *testQueueHandler) QueueName() string {
 func (h *testQueueHandler) Config() QueueConfig {
 	return QueueConfig{
 		VisibilityTimeoutSeconds: 30,
-		MaxReceiveCount:         3,
-		BatchSize:              10,
+		MaxReceiveCount:          3,
+		BatchSize:                10,
 	}
 }
 

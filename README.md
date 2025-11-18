@@ -429,6 +429,22 @@ cd examples/simple-api && go test -v
 
 ## Development
 
+### Setting Up for Development
+
+```bash
+# Clone the repository
+git clone https://github.com/transire/transire.git
+cd transire
+
+# Install dependencies
+go mod download
+
+# Install pre-commit hooks (recommended)
+./scripts/install-hooks.sh
+```
+
+The pre-commit hooks run the same checks as CI to catch issues before pushing.
+
 ### Building the CLI
 
 ```bash

@@ -54,7 +54,7 @@ func TestDetectRuntime(t *testing.T) {
 		{
 			name: "explicit override",
 			envVars: map[string]string{
-				"TRANSIRE_RUNTIME": "local",
+				"TRANSIRE_RUNTIME":         "local",
 				"AWS_LAMBDA_FUNCTION_NAME": "my-function", // Should be ignored
 			},
 			expected: RuntimeLocal,
@@ -63,7 +63,7 @@ func TestDetectRuntime(t *testing.T) {
 			name: "AWS Lambda takes precedence over Cloud Run",
 			envVars: map[string]string{
 				"AWS_LAMBDA_FUNCTION_NAME": "my-function",
-				"K_SERVICE": "my-service",
+				"K_SERVICE":                "my-service",
 			},
 			expected: RuntimeAWSLambda,
 		},

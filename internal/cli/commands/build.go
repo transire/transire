@@ -67,11 +67,11 @@ Examples:
 			// Build artifacts
 			log.Printf("📦 Building artifacts for %s/%s", config.Cloud, config.Runtime)
 			buildConfig := transire.BuildConfig{
-				AppPath:      ".",
-				OutputDir:    outputDir,
-				Architecture: config.Lambda.Architecture,
-				Environment:  config.Environment,
-				ExcludeTags:  []string{"local"},
+				AppPath:       ".",
+				OutputDir:     outputDir,
+				Architecture:  config.Lambda.Architecture,
+				Environment:   config.Environment,
+				ExcludeTags:   []string{"local"},
 				Optimizations: true,
 			}
 
@@ -109,7 +109,6 @@ Examples:
 	return cmd
 }
 
-
 // convertFunctionGroups converts config function groups to IaC format
 func convertFunctionGroups(functions map[string]transire.FunctionConfig) map[string]transire.FunctionGroupSpec {
 	result := make(map[string]transire.FunctionGroupSpec)
@@ -117,10 +116,10 @@ func convertFunctionGroups(functions map[string]transire.FunctionConfig) map[str
 	for name, config := range functions {
 		spec := transire.FunctionGroupSpec{
 			Include:             config.Include[0], // Simplification for now
-			MemoryMB:           config.MemoryMB,
-			TimeoutSeconds:     config.TimeoutSeconds,
+			MemoryMB:            config.MemoryMB,
+			TimeoutSeconds:      config.TimeoutSeconds,
 			ReservedConcurrency: config.ReservedConcurrency,
-			Environment:        config.Environment,
+			Environment:         config.Environment,
 		}
 		result[name] = spec
 	}

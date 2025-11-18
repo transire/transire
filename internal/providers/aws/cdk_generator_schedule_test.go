@@ -7,10 +7,10 @@ import (
 // TestScheduleExpressionConversion tests that cron expressions are properly formatted for EventBridge
 func TestScheduleExpressionConversion(t *testing.T) {
 	tests := []struct {
-		name           string
-		input          string // User's cron expression from transire.yaml
-		expected       string // What should be generated in CDK
-		expectedError  bool
+		name          string
+		input         string // User's cron expression from transire.yaml
+		expected      string // What should be generated in CDK
+		expectedError bool
 	}{
 		{
 			name:     "5-field cron should be converted to 6-field",
