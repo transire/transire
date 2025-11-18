@@ -173,8 +173,12 @@ func (h *WeeklyBackupHandler) HandleSchedule(ctx context.Context, event transire
 }
 `
 
-	os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(mainGo), 0644)
+	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644); err != nil {
+		t.Fatalf("Failed to create go.mod: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(mainGo), 0644); err != nil {
+		t.Fatalf("Failed to create main.go: %v", err)
+	}
 
 	config := &transire.Config{
 		Name:     "test-app",

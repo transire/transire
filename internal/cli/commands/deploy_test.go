@@ -52,21 +52,33 @@ func TestDeployRegionDetection(t *testing.T) {
 			oldDefaultRegion := os.Getenv("AWS_DEFAULT_REGION")
 			oldRegion := os.Getenv("AWS_REGION")
 			defer func() {
-				os.Setenv("AWS_DEFAULT_REGION", oldDefaultRegion)
-				os.Setenv("AWS_REGION", oldRegion)
+				if err := os.Setenv("AWS_DEFAULT_REGION", oldDefaultRegion); err != nil {
+					t.Errorf("Failed to restore AWS_DEFAULT_REGION: %v", err)
+				}
+				if err := os.Setenv("AWS_REGION", oldRegion); err != nil {
+					t.Errorf("Failed to restore AWS_REGION: %v", err)
+				}
 			}()
 
 			// Set up test environment
 			if tt.awsDefaultReg != "" {
-				os.Setenv("AWS_DEFAULT_REGION", tt.awsDefaultReg)
+				if err := os.Setenv("AWS_DEFAULT_REGION", tt.awsDefaultReg); err != nil {
+					t.Fatalf("Failed to set AWS_DEFAULT_REGION: %v", err)
+				}
 			} else {
-				os.Unsetenv("AWS_DEFAULT_REGION")
+				if err := os.Unsetenv("AWS_DEFAULT_REGION"); err != nil {
+					t.Fatalf("Failed to unset AWS_DEFAULT_REGION: %v", err)
+				}
 			}
 
 			if tt.awsRegion != "" {
-				os.Setenv("AWS_REGION", tt.awsRegion)
+				if err := os.Setenv("AWS_REGION", tt.awsRegion); err != nil {
+					t.Fatalf("Failed to set AWS_REGION: %v", err)
+				}
 			} else {
-				os.Unsetenv("AWS_REGION")
+				if err := os.Unsetenv("AWS_REGION"); err != nil {
+					t.Fatalf("Failed to unset AWS_REGION: %v", err)
+				}
 			}
 
 			// Test the region detection logic
