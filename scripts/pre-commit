@@ -95,7 +95,82 @@ else
 fi
 echo ""
 
-# 5. Build CLI
+# 5. Check MPL 2.0 license headers
+print_step "Checking MPL 2.0 license headers..."
+expected_header="This Source Code Form is subject to the terms of the Mozilla Public"
+go_files=$(find . -name "*.go" -type f | grep -v vendor/ | grep -v .git/ | grep -v node_modules/ | grep -v examples/)
+missing_headers=()
+
+for file in $go_files; do
+    if ! head -n 3 "$file" | grep -q "$expected_header"; then
+        missing_headers+=("$file")
+    fi
+done
+
+if [ ${#missing_headers[@]} -eq 0 ]; then
+    print_success "All Go files have proper MPL 2.0 license headers"
+else
+    print_error "License header check failed"
+    echo "The following files are missing MPL 2.0 license headers:"
+    for file in "${missing_headers[@]}"; do
+        echo "  - $file"
+    done
+    echo ""
+    echo "Add this header to each file:"
+    echo "// This Source Code Form is subject to the terms of the Mozilla Public"
+    echo "// License, v. 2.0. If a copy of the MPL was not distributed with this"
+    echo "// file, You can obtain one at http://mozilla.org/MPL/2.0/."
+    echo ""
+    CHECKS_PASSED=false
+fi
+echo ""
+
+# 6. Check MIT license headers in examples
+print_step "Checking MIT license headers in example files..."
+expected_mit_header="Permission is hereby granted, free of charge"
+example_files=$(find examples/ -name "*.go" -type f 2>/dev/null || true)
+
+if [ -z "$example_files" ]; then
+    print_success "No example Go files found to check"
+else
+    missing_mit_headers=()
+
+    for file in $example_files; do
+        if ! head -n 20 "$file" | grep -q "$expected_mit_header"; then
+            missing_mit_headers+=("$file")
+        fi
+    done
+
+    if [ ${#missing_mit_headers[@]} -eq 0 ]; then
+        print_success "All example Go files have proper MIT license headers"
+    else
+        print_error "MIT license header check failed for examples"
+        echo "The following example files are missing MIT license headers:"
+        for file in "${missing_mit_headers[@]}"; do
+            echo "  - $file"
+        done
+        echo ""
+        echo "Example files should have MIT license headers for easier reuse"
+        echo ""
+        CHECKS_PASSED=false
+    fi
+fi
+echo ""
+
+# 7. Verify LICENSE file
+print_step "Verifying LICENSE file..."
+if [ ! -f "LICENSE" ]; then
+    print_error "LICENSE file is missing from repository root"
+    CHECKS_PASSED=false
+elif ! grep -q "Mozilla Public License Version 2.0" LICENSE; then
+    print_error "LICENSE file does not contain MPL 2.0 text"
+    CHECKS_PASSED=false
+else
+    print_success "LICENSE file is present and contains MPL 2.0"
+fi
+echo ""
+
+# 8. Build CLI
 print_step "Building CLI..."
 if go build -o /tmp/transire-cli-test cmd/transire/main.go 2>&1; then
     rm -f /tmp/transire-cli-test

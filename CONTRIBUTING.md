@@ -9,6 +9,7 @@ Thank you for your interest in contributing to Transire! This document provides 
 - [Development Workflow](#development-workflow)
 - [Testing](#testing)
 - [Code Quality](#code-quality)
+- [Contributor License Agreement](#contributor-license-agreement)
 - [Submitting Changes](#submitting-changes)
 - [Areas We Need Help](#areas-we-need-help)
 
@@ -266,14 +267,52 @@ if err != nil {
 
 The project uses golangci-lint with configuration in `.golangci.yml`. The pre-commit hook runs this automatically.
 
+## Contributor License Agreement
+
+Before contributing to Transire, you must sign our Contributor License Agreement (CLA). This ensures that the project can be maintained and distributed freely under the Mozilla Public License 2.0.
+
+### Why do we require a CLA?
+
+The CLA ensures that:
+- You grant Transire maintainers the right to use your contributions
+- You confirm that you have the legal right to grant this license
+- Your contributions will be licensed under MPL 2.0
+- The project can be maintained and distributed freely
+
+### Signing the CLA
+
+**For Individual Contributors:**
+1. Review the CLA terms in [.github/CLA.md](.github/CLA.md)
+2. [Sign the Individual CLA](https://github.com/transire/transire/issues/new?template=individual-cla.md&title=Individual%20CLA%20for%20@USERNAME) (replace @USERNAME with your GitHub username)
+3. Fill out all required information accurately
+4. Submit the issue
+
+**For Corporate Contributors:**
+1. Review the CLA terms in [.github/CLA.md](.github/CLA.md)
+2. [Sign the Corporate CLA](https://github.com/transire/transire/issues/new?template=corporate-cla.md&title=Corporate%20CLA%20for%20COMPANY_NAME) (replace COMPANY_NAME with your organization)
+3. The authorized signatory must complete all corporate information
+4. List all employees authorized to contribute
+5. Submit the issue
+
+### After Signing
+
+Once you've signed the CLA:
+- Your GitHub username will be added to our CLA database
+- The CLA bot will automatically approve your future pull requests
+- You can start contributing to Transire!
+
+**Note:** The CLA check is automated. When you open a pull request, if you haven't signed the CLA, the bot will comment with instructions. Simply comment with "I have read the CLA Document and I hereby sign the CLA" on your PR to complete the process.
+
 ## Submitting Changes
 
 ### Before Submitting
 
+- [ ] Signed the CLA (if this is your first contribution)
 - [ ] All tests pass locally
 - [ ] Code is formatted with `gofmt`
 - [ ] `go vet` passes
 - [ ] golangci-lint passes
+- [ ] All Go files have proper MPL 2.0 license headers
 - [ ] CLI builds successfully
 - [ ] Added tests for new functionality
 - [ ] Updated documentation if needed
@@ -374,7 +413,7 @@ Be respectful, inclusive, and professional. We're all here to build something gr
 
 ## License
 
-By contributing to Transire, you agree that your contributions will be licensed under the MIT License.
+By contributing to Transire, you agree that your contributions will be licensed under the Mozilla Public License 2.0.
 
 ---
 

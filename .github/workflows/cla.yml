@@ -1,0 +1,41 @@
+name: CLA Check
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, closed, synchronize]
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  cla-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+    - name: CLA Check
+      uses: contributor-assistant/github-action@v2.5.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Set personal access token to enable the action to push the cla file to repository
+        PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        path-to-signatures: 'cla-signatures/cla.json'
+        path-to-document: '.github/CLA.md'
+        # Branch to push the cla file to
+        branch: 'main'
+        allowlist: 'bot,dependabot[bot],renovate[bot]'
+
+        #below are the optional inputs - If the optional inputs are not given, then default values will be taken
+        remote-organization-name: 'transire'
+        remote-repository-name: 'cla-signatures'
+        create-file-commit-message: 'Creating file for storing CLA signatures'
+        signed-commit-message: 'Adding $contributorName to CLA signers'
+        custom-notsigned-prcomment: 'Thank you for your contribution! Before we can merge this pull request, we need you to sign our Contributor License Agreement (CLA).<br/>Please review and sign the CLA by clicking [here](.github/CLA.md).<br/>Once signed, comment with "I have read the CLA Document and I hereby sign the CLA" to continue.'
+        custom-pr-sign-comment: 'I have read the CLA Document and I hereby sign the CLA'
+        custom-allsigned-prcomment: 'All contributors have signed the CLA! 🎉'
+        use-dco-flag: false

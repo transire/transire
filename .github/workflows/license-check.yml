@@ -1,0 +1,140 @@
+name: License Header Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    name: Check MPL 2.0 License Headers
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check license headers in Go files
+      run: |
+        echo "Checking for MPL 2.0 license headers in Go files..."
+
+        # Expected header pattern
+        expected_header="This Source Code Form is subject to the terms of the Mozilla Public"
+
+        # Find all Go files (exclude examples which use MIT license)
+        go_files=$(find . -name "*.go" -type f | grep -v vendor/ | grep -v .git/ | grep -v examples/)
+
+        missing_headers=()
+
+        # Check each Go file
+        for file in $go_files; do
+          if ! head -n 3 "$file" | grep -q "$expected_header"; then
+            missing_headers+=("$file")
+          fi
+        done
+
+        # Report results
+        if [ ${#missing_headers[@]} -eq 0 ]; then
+          echo "✓ All Go files have proper MPL 2.0 license headers"
+        else
+          echo "✗ The following files are missing MPL 2.0 license headers:"
+          for file in "${missing_headers[@]}"; do
+            echo "  - $file"
+          done
+          echo ""
+          echo "Please add the following header to each file:"
+          echo ""
+          echo "// This Source Code Form is subject to the terms of the Mozilla Public"
+          echo "// License, v. 2.0. If a copy of the MPL was not distributed with this"
+          echo "// file, You can obtain one at http://mozilla.org/MPL/2.0/."
+          echo ""
+          exit 1
+        fi
+
+    - name: Check MIT headers in example files
+      run: |
+        echo "Checking for MIT license headers in example Go files..."
+
+        # Expected MIT header pattern
+        expected_mit_header="Permission is hereby granted, free of charge"
+
+        # Find all Go files in examples
+        example_files=$(find examples/ -name "*.go" -type f 2>/dev/null || true)
+
+        if [ -z "$example_files" ]; then
+          echo "✓ No example Go files found to check"
+          exit 0
+        fi
+
+        missing_mit_headers=()
+
+        # Check each example Go file
+        for file in $example_files; do
+          if ! head -n 20 "$file" | grep -q "$expected_mit_header"; then
+            missing_mit_headers+=("$file")
+          fi
+        done
+
+        # Report results
+        if [ ${#missing_mit_headers[@]} -eq 0 ]; then
+          echo "✓ All example Go files have proper MIT license headers"
+        else
+          echo "✗ The following example files are missing MIT license headers:"
+          for file in "${missing_mit_headers[@]}"; do
+            echo "  - $file"
+          done
+          echo ""
+          echo "Example files should have MIT license headers for easier reuse"
+          exit 1
+        fi
+
+    - name: Verify LICENSE file exists
+      run: |
+        if [ ! -f "LICENSE" ]; then
+          echo "✗ LICENSE file is missing from repository root"
+          exit 1
+        fi
+
+        if ! grep -q "Mozilla Public License Version 2.0" LICENSE; then
+          echo "✗ LICENSE file does not contain MPL 2.0 text"
+          exit 1
+        fi
+
+        echo "✓ LICENSE file is present and contains MPL 2.0"
+
+    - name: Check for conflicting license files
+      run: |
+        # Check for other common license files that might conflict
+        conflicting_files=()
+
+        if [ -f "LICENSE.txt" ] && [ -f "LICENSE" ]; then
+          conflicting_files+=("LICENSE.txt")
+        fi
+
+        if [ -f "LICENSE.md" ] && [ -f "LICENSE" ]; then
+          conflicting_files+=("LICENSE.md")
+        fi
+
+        if [ -f "COPYING" ]; then
+          conflicting_files+=("COPYING")
+        fi
+
+        if [ -f "MIT-LICENSE" ] || [ -f "MIT-LICENSE.txt" ]; then
+          conflicting_files+=("MIT-LICENSE*")
+        fi
+
+        if [ -f "Apache-2.0" ] || [ -f "APACHE-LICENSE" ]; then
+          conflicting_files+=("Apache-LICENSE*")
+        fi
+
+        if [ ${#conflicting_files[@]} -gt 0 ]; then
+          echo "✗ Found potentially conflicting license files:"
+          for file in "${conflicting_files[@]}"; do
+            echo "  - $file"
+          done
+          echo "Please remove conflicting license files or verify they are compatible with MPL 2.0"
+          exit 1
+        fi
+
+        echo "✓ No conflicting license files found"

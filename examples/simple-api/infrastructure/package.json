@@ -1,6 +1,7 @@
 {
   "name": "transire-infrastructure",
   "version": "0.1.0",
+  "license": "MIT",
   "bin": {
     "infrastructure": "app.js"
   },

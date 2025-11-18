@@ -520,7 +520,7 @@ Areas we'd love help with:
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE) for details.
+Mozilla Public License 2.0 - see [LICENSE](./LICENSE) for details.
 
 ## Links
 

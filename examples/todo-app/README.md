@@ -187,4 +187,6 @@ The same code runs locally and in Lambda with no changes!
 
 ## License
 
-Part of the Transire project.
+**Example Code**: MIT License - Feel free to copy, modify, and use this example code in your own projects.
+
+**Transire Framework**: Mozilla Public License 2.0 - The underlying Transire framework is licensed under MPL 2.0.
