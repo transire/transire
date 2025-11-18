@@ -21,8 +21,6 @@ jobs:
       uses: contributor-assistant/github-action@v2.5.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # Set personal access token to enable the action to push the cla file to repository
-        PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       with:
         path-to-signatures: 'cla-signatures/cla.json'
         path-to-document: '.github/CLA.md'
@@ -31,8 +29,7 @@ jobs:
         allowlist: 'bot,dependabot[bot],renovate[bot]'
 
         #below are the optional inputs - If the optional inputs are not given, then default values will be taken
-        remote-organization-name: 'transire'
-        remote-repository-name: 'cla-signatures'
+        # Note: Using local storage instead of remote repository to avoid needing PERSONAL_ACCESS_TOKEN
         create-file-commit-message: 'Creating file for storing CLA signatures'
         signed-commit-message: 'Adding $contributorName to CLA signers'
         custom-notsigned-prcomment: 'Thank you for your contribution! Before we can merge this pull request, we need you to sign our Contributor License Agreement (CLA).<br/>Please review and sign the CLA by clicking [here](.github/CLA.md).<br/>Once signed, comment with "I have read the CLA Document and I hereby sign the CLA" to continue.'
