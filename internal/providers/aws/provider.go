@@ -9,8 +9,7 @@ import (
 
 // Provider implements the AWS cloud provider
 type Provider struct {
-	region    string
-	accountID string
+	region string
 }
 
 // NewProvider creates a new AWS provider

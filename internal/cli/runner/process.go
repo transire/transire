@@ -90,7 +90,7 @@ func (p *Process) Stop() error {
 	case <-time.After(5 * time.Second):
 		// Force kill if not stopped gracefully
 		log.Printf("Process did not stop gracefully, sending SIGKILL")
-		syscall.Kill(-p.cmd.Process.Pid, syscall.SIGKILL)
+		_ = syscall.Kill(-p.cmd.Process.Pid, syscall.SIGKILL)
 		return fmt.Errorf("process did not stop gracefully")
 	case err := <-done:
 		if err != nil && p.ctx.Err() != context.Canceled {

@@ -170,7 +170,9 @@ Examples:
 			if err != nil {
 				return fmt.Errorf("failed to send message to dev API: %w (is your app running?)", err)
 			}
-			defer resp.Body.Close()
+			defer func() {
+				_ = resp.Body.Close()
+			}()
 
 			if resp.StatusCode != http.StatusOK {
 				return fmt.Errorf("dev API returned status %d", resp.StatusCode)
@@ -331,7 +333,9 @@ Examples:
 			if err != nil {
 				return fmt.Errorf("failed to execute schedule via dev API: %w (is your app running?)", err)
 			}
-			defer resp.Body.Close()
+			defer func() {
+				_ = resp.Body.Close()
+			}()
 
 			if resp.StatusCode != http.StatusOK {
 				return fmt.Errorf("dev API returned status %d", resp.StatusCode)
@@ -354,33 +358,4 @@ Examples:
 
 	cmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to configuration file")
 	return cmd
-}
-
-// devMessage implements the Message interface for dev commands
-type devMessage struct {
-	id            string
-	body          []byte
-	attributes    map[string]string
-	deliveryCount int
-	enqueuedAt    time.Time
-}
-
-func (m *devMessage) ID() string {
-	return m.id
-}
-
-func (m *devMessage) Body() []byte {
-	return m.body
-}
-
-func (m *devMessage) Attributes() map[string]string {
-	return m.attributes
-}
-
-func (m *devMessage) DeliveryCount() int {
-	return m.deliveryCount
-}
-
-func (m *devMessage) EnqueuedAt() time.Time {
-	return m.enqueuedAt
 }

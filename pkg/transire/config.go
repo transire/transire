@@ -182,7 +182,7 @@ func (c *Config) setDefaults() {
 	}
 
 	// Function defaults - create main function if none specified
-	if c.Functions == nil || len(c.Functions) == 0 {
+	if len(c.Functions) == 0 {
 		c.Functions = map[string]FunctionConfig{
 			"main": {
 				Include: []IncludeSpec{

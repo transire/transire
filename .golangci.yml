@@ -1,0 +1,34 @@
+version: 2
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  govet:
+    enable:
+      - assign
+      - atomic
+      - bools
+      - buildtag
+      - nilfunc
+      - printf
+      - structtag
+      - tests
+      - unreachable
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - misspell
+    - unconvert
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly

@@ -14,6 +14,9 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
+// contextKey is a custom type for context keys to avoid collisions
+type contextKey string
+
 // lambdaRuntime implements the Runtime interface for AWS Lambda
 type lambdaRuntime struct {
 	app *App
@@ -204,7 +207,7 @@ func (r *lambdaRuntime) apiGatewayToHTTPRequest(event events.APIGatewayV2HTTPReq
 	// Set path parameters in context (Chi will handle this)
 	for key, value := range event.PathParameters {
 		// Store in request context for Chi
-		req = req.WithContext(context.WithValue(req.Context(), key, value))
+		req = req.WithContext(context.WithValue(req.Context(), contextKey(key), value))
 	}
 
 	return req, nil
@@ -314,7 +317,7 @@ func isCloudFormationHash(s string) bool {
 		return false
 	}
 	for _, c := range s {
-		if !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+		if (c < 'A' || c > 'Z') && (c < 'a' || c > 'z') && (c < '0' || c > '9') {
 			return false
 		}
 	}

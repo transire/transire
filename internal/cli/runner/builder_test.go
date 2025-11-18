@@ -53,7 +53,7 @@ func TestBuilder_Build(t *testing.T) {
 			}
 
 			// Clean up
-			os.Remove(outputPath)
+			_ = os.Remove(outputPath)
 		})
 	}
 }

@@ -61,7 +61,9 @@ func TestLocalDevEndpoints_QueueMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to send dev queue message: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
@@ -127,7 +129,9 @@ func TestLocalDevEndpoints_ScheduleExecution(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to execute dev schedule: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)

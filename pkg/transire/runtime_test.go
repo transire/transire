@@ -76,7 +76,7 @@ func TestDetectRuntime(t *testing.T) {
 
 			// Set test environment
 			for key, value := range tt.envVars {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 
 			result := detectRuntime()
@@ -88,16 +88,16 @@ func TestDetectRuntime(t *testing.T) {
 }
 
 func clearRuntimeEnv() {
-	os.Unsetenv("AWS_LAMBDA_FUNCTION_NAME")
-	os.Unsetenv("K_SERVICE")
-	os.Unsetenv("FUNCTIONS_WORKER_RUNTIME")
-	os.Unsetenv("TRANSIRE_RUNTIME")
+	_ = os.Unsetenv("AWS_LAMBDA_FUNCTION_NAME")
+	_ = os.Unsetenv("K_SERVICE")
+	_ = os.Unsetenv("FUNCTIONS_WORKER_RUNTIME")
+	_ = os.Unsetenv("TRANSIRE_RUNTIME")
 }
 
 func setEnvVar(key, value string) {
 	if value == "" {
-		os.Unsetenv(key)
+		_ = os.Unsetenv(key)
 	} else {
-		os.Setenv(key, value)
+		_ = os.Setenv(key, value)
 	}
 }

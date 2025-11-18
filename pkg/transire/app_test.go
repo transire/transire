@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"testing"
-	"time"
 )
 
 func TestNew(t *testing.T) {
@@ -13,6 +12,7 @@ func TestNew(t *testing.T) {
 
 		if app == nil {
 			t.Fatal("New() returned nil")
+			return
 		}
 
 		if app.router == nil {
@@ -20,7 +20,8 @@ func TestNew(t *testing.T) {
 		}
 
 		if app.config == nil {
-			t.Error("App config is nil")
+			t.Fatal("App config is nil")
+			return
 		}
 
 		// Check default config values
@@ -184,23 +185,5 @@ func (h *testScheduleHandler) Config() ScheduleConfig {
 		Timezone:       "UTC",
 		Enabled:        true,
 		TimeoutSeconds: 60,
-	}
-}
-
-type testHTTPHandler struct {
-	path    string
-	methods []string
-}
-
-func (h *testHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
-}
-
-func (h *testHTTPHandler) Metadata() HTTPHandlerMetadata {
-	return HTTPHandlerMetadata{
-		Methods: h.methods,
-		Path:    h.path,
-		Timeout: 30 * time.Second,
 	}
 }
