@@ -51,14 +51,7 @@ Examples:
 			}
 
 			// Override region if specified
-			deployRegion := region
-			if deployRegion == "" {
-				// Use AWS_DEFAULT_REGION or fallback
-				deployRegion = os.Getenv("AWS_DEFAULT_REGION")
-				if deployRegion == "" {
-					deployRegion = "us-east-1"
-				}
-			}
+			deployRegion := detectDeployRegion(region)
 
 			log.Printf("🚀 Deploying Transire application: %s", config.Name)
 			log.Printf("🌎 Target: %s/%s in %s", config.Cloud, config.Runtime, deployRegion)
@@ -104,4 +97,29 @@ Examples:
 	cmd.Flags().StringVarP(&region, "region", "r", "", "AWS region (overrides AWS_DEFAULT_REGION)")
 
 	return cmd
+}
+
+// detectDeployRegion detects the AWS region to use for deployment
+// Following AWS SDK's region resolution order:
+// 1. Explicit region flag (--region)
+// 2. AWS_REGION environment variable
+// 3. AWS_DEFAULT_REGION environment variable
+// 4. Default to us-east-1
+func detectDeployRegion(regionFlag string) string {
+	// Override region if specified via flag
+	if regionFlag != "" {
+		return regionFlag
+	}
+
+	// AWS SDK checks AWS_REGION first, then AWS_DEFAULT_REGION
+	if region := os.Getenv("AWS_REGION"); region != "" {
+		return region
+	}
+
+	if region := os.Getenv("AWS_DEFAULT_REGION"); region != "" {
+		return region
+	}
+
+	// Default fallback
+	return "us-east-1"
 }

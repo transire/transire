@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/transire/transire/pkg/transire"
 )
@@ -80,9 +79,6 @@ func (s *Scaffolder) generateGoProject() error {
 
 // generateGoMod creates go.mod file
 func (s *Scaffolder) generateGoMod() error {
-	// Try to determine the relative path to transire module
-	replacePath := s.detectTransireModulePath()
-
 	content := fmt.Sprintf(`module %s
 
 go 1.21
@@ -91,62 +87,9 @@ require (
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/transire/transire v0.1.0
 )
-
-replace github.com/transire/transire => %s
-`, s.config.Name, replacePath)
+`, s.config.Name)
 
 	return s.writeFile("go.mod", content)
-}
-
-// detectTransireModulePath tries to detect the path to the transire module
-func (s *Scaffolder) detectTransireModulePath() string {
-	// Get current working directory (where CLI is running from)
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "../transire" // fallback
-	}
-
-	// Find the transire root by looking for go.mod with the transire module
-	transireRoot := s.findTransireRoot(cwd)
-	if transireRoot == "" {
-		return "../transire" // fallback
-	}
-
-	// Calculate relative path from project directory to transire root
-	projectAbsPath, err := filepath.Abs(s.projectDir)
-	if err != nil {
-		return "../transire" // fallback
-	}
-
-	relPath, err := filepath.Rel(projectAbsPath, transireRoot)
-	if err != nil {
-		return "../transire" // fallback
-	}
-
-	return relPath
-}
-
-// findTransireRoot searches upward from the given directory to find transire module root
-func (s *Scaffolder) findTransireRoot(startDir string) string {
-	dir := startDir
-	for {
-		goModPath := filepath.Join(dir, "go.mod")
-		if _, err := os.Stat(goModPath); err == nil {
-			// Read go.mod to check if it's the transire module
-			if content, err := os.ReadFile(goModPath); err == nil {
-				if strings.Contains(string(content), "module github.com/transire/transire") {
-					return dir
-				}
-			}
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break // reached root
-		}
-		dir = parent
-	}
-	return ""
 }
 
 // generateMainGo creates main.go file
