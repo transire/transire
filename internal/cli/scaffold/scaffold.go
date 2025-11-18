@@ -89,7 +89,7 @@ go 1.21
 
 require (
 	github.com/go-chi/chi/v5 v5.0.12
-	github.com/transire/transire v0.1.0
+	github.com/transire/transire v0.0.0-20251118153525-9a0c60b29cf0
 )
 `, s.config.Name)
 
@@ -102,6 +102,7 @@ func (s *Scaffolder) generateMainGo() error {
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -109,8 +110,14 @@ import (
 )
 
 func main() {
-	// Create Transire app
-	app := transire.New()
+	// Load configuration from transire.yaml
+	config, err := transire.LoadConfig("")
+	if err != nil {
+		log.Fatalf("Failed to load config: %%v", err)
+	}
+
+	// Create Transire app with configuration
+	app := transire.New(transire.WithConfig(config))
 
 	// Get Chi router - use exactly like normal Chi
 	r := app.Router()
