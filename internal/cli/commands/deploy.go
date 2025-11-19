@@ -48,11 +48,11 @@ Examples:
 				return fmt.Errorf("failed to load configuration: %w", err)
 			}
 
-			// Override environment if specified
-			if environment != "" {
-				// Could modify config based on environment
-				log.Printf("🌍 Deploying to environment: %s", environment)
+			// Set default environment if not specified
+			if environment == "" {
+				environment = "dev"
 			}
+			log.Printf("🌍 Deploying to environment: %s", environment)
 
 			// Override region if specified
 			deployRegion := detectDeployRegion(region)
@@ -70,7 +70,7 @@ Examples:
 
 			// Deploy
 			deployConfig := transire.DeployConfig{
-				StackName:   config.Name + "-stack",
+				StackName:   config.Name + "-" + environment,
 				Region:      deployRegion,
 				Environment: environment,
 				DryRun:      dryRun,

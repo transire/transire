@@ -112,6 +112,7 @@ export class {{.StackClassName}} extends cdk.Stack {
 {{range .Functions}}
     // Lambda function: {{.Name}}
     const {{.VarName}} = new lambda.Function(this, '{{.PascalName}}Function', {
+      functionName: '{{$.AppName}}-{{$.Environment}}-{{.Name}}',
       runtime: lambda.Runtime.PROVIDED_AL2,
       architecture: lambda.Architecture.ARM_64,
       handler: 'bootstrap',
@@ -133,6 +134,7 @@ export class {{.StackClassName}} extends cdk.Stack {
 {{if .HasHTTPHandlers}}
     // API Gateway v2 HTTP API
     const api = new apigatewayv2.HttpApi(this, 'HttpApi', {
+      apiName: '{{$.AppName}}-{{$.Environment}}-api',
       defaultIntegration: new integrations.HttpLambdaIntegration(
         'DefaultIntegration',
         {{.MainFunctionAlias}}
@@ -148,10 +150,12 @@ export class {{.StackClassName}} extends cdk.Stack {
 {{range .Queues}}
     // SQS Queue: {{.Name}}
     const {{.VarName}} = new sqs.Queue(this, '{{.PascalName}}Queue', {
-      queueName: '{{.Name}}',
+      queueName: '{{$.AppName}}-{{$.Environment}}-{{.Name}}',
       visibilityTimeout: cdk.Duration.seconds({{.VisibilityTimeoutSeconds}}),
       deadLetterQueue: {
-        queue: new sqs.Queue(this, '{{.PascalName}}DLQ'),
+        queue: new sqs.Queue(this, '{{.PascalName}}DLQ', {
+          queueName: '{{$.AppName}}-{{$.Environment}}-{{.Name}}-dlq',
+        }),
         maxReceiveCount: {{.MaxReceiveCount}},
       },
     });
@@ -168,6 +172,7 @@ export class {{.StackClassName}} extends cdk.Stack {
 {{range .Schedules}}
     // EventBridge rule: {{.Name}}
     const {{.VarName}} = new events.Rule(this, '{{.PascalName}}Rule', {
+      ruleName: '{{$.AppName}}-{{$.Environment}}-{{.Name}}',
       schedule: events.Schedule.expression('{{.CronExpression}}'),
     });
     {{.VarName}}.addTarget(new targets.LambdaFunction({{.FunctionAlias}}));
