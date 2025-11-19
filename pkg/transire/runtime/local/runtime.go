@@ -1,8 +1,10 @@
+//go:build local
+
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package transire
+package local
 
 import (
 	"context"
@@ -11,27 +13,28 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"time"
+
+	"github.com/transire/transire/pkg/transire"
 )
 
-// localRuntime implements the Runtime interface for local development
-type localRuntime struct {
-	config   *Config
+// Runtime implements the transire.Runtime interface for local development
+type Runtime struct {
+	config   *transire.Config
 	server   *http.Server
 	stopChan chan struct{}
 	mu       sync.Mutex
 }
 
-// newLocalRuntime creates a new local runtime
-func newLocalRuntime(config *Config) Runtime {
-	return &localRuntime{
+// NewLocalRuntime creates a new local runtime
+func NewLocalRuntime(config *transire.Config) *Runtime {
+	return &Runtime{
 		config:   config,
 		stopChan: make(chan struct{}),
 	}
 }
 
 // Start begins processing in the local environment
-func (r *localRuntime) Start(ctx context.Context, app *App) error {
+func (r *Runtime) Start(ctx context.Context, app *transire.App) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -65,8 +68,6 @@ func (r *localRuntime) Start(ctx context.Context, app *App) error {
 		}
 	}()
 
-	// TODO: Start queue and scheduler simulators
-
 	// Wait for context cancellation or server error
 	select {
 	case <-ctx.Done():
@@ -80,7 +81,7 @@ func (r *localRuntime) Start(ctx context.Context, app *App) error {
 }
 
 // Stop gracefully shuts down the local runtime
-func (r *localRuntime) Stop(ctx context.Context) error {
+func (r *Runtime) Stop(ctx context.Context) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -103,18 +104,22 @@ func (r *localRuntime) Stop(ctx context.Context) error {
 	default:
 	}
 
-	// TODO: Stop queue and scheduler simulators
-
 	return nil
 }
 
 // IsLocal returns true since this is the local runtime
-func (r *localRuntime) IsLocal() bool {
+func (r *Runtime) IsLocal() bool {
 	return true
 }
 
+// CreateQueueProducer returns a queue producer for local development
+func (r *Runtime) CreateQueueProducer() (transire.QueueProducer, error) {
+	// TODO: Implement local queue producer with in-memory simulator
+	return nil, fmt.Errorf("queue producer not yet implemented for local runtime")
+}
+
 // logRegisteredHandlers logs information about registered handlers
-func (r *localRuntime) logRegisteredHandlers(app *App) {
+func (r *Runtime) logRegisteredHandlers(app *transire.App) {
 	queueHandlers := app.GetQueueHandlers()
 	schedHandlers := app.GetScheduleHandlers()
 
@@ -133,31 +138,9 @@ func (r *localRuntime) logRegisteredHandlers(app *App) {
 	}
 }
 
-// localMessage implements the Message interface for local development
-type localMessage struct {
-	id            string
-	body          []byte
-	attributes    map[string]string
-	deliveryCount int
-	enqueuedAt    time.Time
-}
-
-func (m *localMessage) ID() string {
-	return m.id
-}
-
-func (m *localMessage) Body() []byte {
-	return m.body
-}
-
-func (m *localMessage) Attributes() map[string]string {
-	return m.attributes
-}
-
-func (m *localMessage) DeliveryCount() int {
-	return m.deliveryCount
-}
-
-func (m *localMessage) EnqueuedAt() time.Time {
-	return m.enqueuedAt
+// init registers the local runtime during package initialization
+func init() {
+	transire.RegisterDefaultRuntime(func(config *transire.Config) transire.Runtime {
+		return NewLocalRuntime(config)
+	})
 }

@@ -1,8 +1,10 @@
+//go:build local
+
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package transire
+package local
 
 import (
 	"context"
@@ -13,16 +15,17 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // devHandler wraps the user's router with dev endpoints
 type devHandler struct {
-	app        *App
+	app        *transire.App
 	userRouter chi.Router
 }
 
 // newDevHandler creates a dev handler that wraps the user router
-func newDevHandler(app *App) http.Handler {
+func newDevHandler(app *transire.App) http.Handler {
 	handler := &devHandler{
 		app:        app,
 		userRouter: app.Router(),
@@ -66,7 +69,7 @@ func (h *devHandler) handleQueueSend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a test message
-	message := &localMessage{
+	message := &Message{
 		id:            fmt.Sprintf("dev-msg-%d", time.Now().UnixNano()),
 		body:          []byte(req.Message),
 		attributes:    make(map[string]string),
@@ -79,7 +82,7 @@ func (h *devHandler) handleQueueSend(w http.ResponseWriter, r *http.Request) {
 	// Process the message in a goroutine (async like real queue processing)
 	go func() {
 		ctx := context.Background()
-		failedIDs, err := handler.HandleMessages(ctx, []Message{message})
+		failedIDs, err := handler.HandleMessages(ctx, []transire.Message{message})
 		if err != nil {
 			log.Printf("[DEV] Error processing message %s: %v", message.ID(), err)
 		} else if len(failedIDs) > 0 {
@@ -121,7 +124,7 @@ func (h *devHandler) handleScheduleExecute(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Create a test schedule event
-	event := ScheduleEvent{
+	event := transire.ScheduleEvent{
 		Name:          req.ScheduleName,
 		ScheduledTime: time.Now(),
 		EventID:       fmt.Sprintf("dev-schedule-%d", time.Now().UnixNano()),

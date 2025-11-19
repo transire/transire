@@ -10,9 +10,19 @@ import (
 	"testing"
 )
 
+// mockRuntime is a minimal runtime implementation for testing
+type mockRuntime struct{}
+
+func (r *mockRuntime) Start(ctx context.Context, app *App) error { return nil }
+func (r *mockRuntime) Stop(ctx context.Context) error            { return nil }
+func (r *mockRuntime) IsLocal() bool                             { return true }
+func (r *mockRuntime) CreateQueueProducer() (QueueProducer, error) {
+	return nil, nil
+}
+
 func TestNew(t *testing.T) {
 	t.Run("creates app with default config", func(t *testing.T) {
-		app := New()
+		app := New(WithRuntime(&mockRuntime{}))
 
 		if app == nil {
 			t.Fatal("New() returned nil")
@@ -46,7 +56,7 @@ func TestNew(t *testing.T) {
 			Runtime:  "lambda",
 		}
 
-		app := New(WithConfig(config))
+		app := New(WithConfig(config), WithRuntime(&mockRuntime{}))
 
 		if app.config.Name != "test-app" {
 			t.Errorf("Expected config name 'test-app', got '%s'", app.config.Name)
@@ -55,7 +65,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestAppRouter(t *testing.T) {
-	app := New()
+	app := New(WithRuntime(&mockRuntime{}))
 	router := app.Router()
 
 	if router == nil {
@@ -70,7 +80,7 @@ func TestAppRouter(t *testing.T) {
 }
 
 func TestRegisterQueueHandler(t *testing.T) {
-	app := New()
+	app := New(WithRuntime(&mockRuntime{}))
 
 	handler := &testQueueHandler{
 		queueName: "test-queue",
@@ -88,7 +98,7 @@ func TestRegisterQueueHandler(t *testing.T) {
 }
 
 func TestRegisterScheduleHandler(t *testing.T) {
-	app := New()
+	app := New(WithRuntime(&mockRuntime{}))
 
 	handler := &testScheduleHandler{
 		name:     "test-schedule",
@@ -107,7 +117,7 @@ func TestRegisterScheduleHandler(t *testing.T) {
 }
 
 func TestFindQueueHandler(t *testing.T) {
-	app := New()
+	app := New(WithRuntime(&mockRuntime{}))
 
 	handler1 := &testQueueHandler{queueName: "queue1"}
 	handler2 := &testQueueHandler{queueName: "queue2"}
@@ -127,7 +137,7 @@ func TestFindQueueHandler(t *testing.T) {
 }
 
 func TestFindScheduleHandler(t *testing.T) {
-	app := New()
+	app := New(WithRuntime(&mockRuntime{}))
 
 	handler1 := &testScheduleHandler{name: "schedule1"}
 	handler2 := &testScheduleHandler{name: "schedule2"}
@@ -144,6 +154,49 @@ func TestFindScheduleHandler(t *testing.T) {
 	if found != nil {
 		t.Error("FindScheduleHandler should return nil for nonexistent schedule")
 	}
+}
+
+func TestAppConfig(t *testing.T) {
+	t.Run("returns config via Config()", func(t *testing.T) {
+		customConfig := &Config{
+			Name:     "my-app",
+			Language: "go",
+			Cloud:    "aws",
+			Runtime:  "lambda",
+		}
+
+		app := New(WithConfig(customConfig), WithRuntime(&mockRuntime{}))
+		retrievedConfig := app.Config()
+
+		if retrievedConfig == nil {
+			t.Fatal("Config() returned nil")
+		}
+
+		if retrievedConfig.Name != "my-app" {
+			t.Errorf("Expected config name 'my-app', got '%s'", retrievedConfig.Name)
+		}
+
+		if retrievedConfig != customConfig {
+			t.Error("Config() should return the same config reference")
+		}
+	})
+
+	t.Run("returns default config when none provided", func(t *testing.T) {
+		app := New(WithRuntime(&mockRuntime{}))
+		config := app.Config()
+
+		if config == nil {
+			t.Fatal("Config() returned nil")
+		}
+
+		if config.Language != "go" {
+			t.Errorf("Expected default language 'go', got '%s'", config.Language)
+		}
+
+		if config.Cloud != "aws" {
+			t.Errorf("Expected default cloud 'aws', got '%s'", config.Cloud)
+		}
+	})
 }
 
 // Test helper implementations

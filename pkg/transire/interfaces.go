@@ -111,7 +111,23 @@ func WithConfig(config *Config) Option {
 	}
 }
 
+// WithRuntime sets a custom runtime (for testing)
+func WithRuntime(runtime Runtime) Option {
+	return func(a *App) {
+		a.runtime = runtime
+	}
+}
+
+// WithQueueProducer sets a custom queue producer (for testing)
+func WithQueueProducer(producer QueueProducer) Option {
+	return func(a *App) {
+		a.queueProducer = producer
+	}
+}
+
 // Provider abstracts cloud provider implementations
+// Providers handle build/deploy operations only, NOT runtime execution.
+// Runtimes self-register via build tags.
 type Provider interface {
 	// Name returns provider identifier (aws, gcp, azure)
 	Name() string
@@ -127,9 +143,6 @@ type Provider interface {
 
 	// Deploy applies infrastructure and artifacts
 	Deploy(ctx context.Context, config DeployConfig) error
-
-	// CreateRuntime returns a runtime implementation for local/cloud execution
-	CreateRuntime(ctx context.Context, config RuntimeConfig) (Runtime, error)
 }
 
 // Runtime handles the execution environment
@@ -142,6 +155,11 @@ type Runtime interface {
 
 	// IsLocal returns true if running in local development mode
 	IsLocal() bool
+
+	// CreateQueueProducer returns runtime-specific queue producer
+	// This enables queue message publishing across local and cloud environments
+	// Called during app initialization (in New()), NOT during Start()
+	CreateQueueProducer() (QueueProducer, error)
 }
 
 // BuildConfig configures artifact building
@@ -227,4 +245,23 @@ type IncludeSpec struct {
 	HTTPHandlers     interface{} // "*" or []string
 	QueueHandlers    interface{} // "*" or []string
 	ScheduleHandlers interface{} // "*" or []string
+}
+
+// QueueProducer publishes messages to queues
+type QueueProducer interface {
+	// SendMessage publishes a single message
+	SendMessage(ctx context.Context, queueName string, body []byte, attributes map[string]string) error
+
+	// SendMessageBatch publishes multiple messages
+	SendMessageBatch(ctx context.Context, queueName string, messages []OutgoingMessage) error
+
+	// GetQueueURL returns the queue URL for direct SDK access if needed
+	GetQueueURL(ctx context.Context, queueName string) (string, error)
+}
+
+// OutgoingMessage represents a message to be sent
+type OutgoingMessage struct {
+	Body         []byte
+	Attributes   map[string]string
+	DelaySeconds int
 }

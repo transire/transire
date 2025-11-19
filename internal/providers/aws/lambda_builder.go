@@ -48,15 +48,11 @@ func (b *LambdaBuilder) Build(ctx context.Context) error {
 
 // buildGoBinary compiles the Go application for Lambda
 func (b *LambdaBuilder) buildGoBinary(ctx context.Context) error {
-	// Build tags to exclude local development code
-	buildTags := append(b.config.ExcludeTags, "!local")
-
-	// Prepare build command
+	// Prepare build command with lambda build tag
 	args := []string{"build"}
 
-	if len(buildTags) > 0 {
-		args = append(args, "-tags", joinTags(buildTags))
-	}
+	// Always use lambda tag for Lambda builds
+	args = append(args, "-tags=lambda")
 
 	if b.config.Optimizations {
 		// Strip debug information for smaller binary
@@ -106,17 +102,4 @@ func (b *LambdaBuilder) createZipPackage() error {
 	}
 
 	return nil
-}
-
-// joinTags joins build tags with appropriate logic
-func joinTags(tags []string) string {
-	// Simple implementation - could be enhanced for complex tag logic
-	result := ""
-	for i, tag := range tags {
-		if i > 0 {
-			result += " && "
-		}
-		result += tag
-	}
-	return result
 }
