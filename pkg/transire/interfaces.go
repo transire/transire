@@ -157,6 +157,8 @@ type BuildConfig struct {
 // IaCConfig configures infrastructure generation
 type IaCConfig struct {
 	StackName         string
+	AppName           string // Application name for resource prefixing
+	Environment       string // Environment name for resource suffixing (dev, staging, prod)
 	HTTPHandlers      []HTTPHandlerSpec
 	QueueHandlers     []QueueHandlerSpec
 	ScheduleHandlers  []ScheduleHandlerSpec

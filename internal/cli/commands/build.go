@@ -18,8 +18,9 @@ import (
 // NewBuildCommand creates the build command
 func NewBuildCommand() *cobra.Command {
 	var (
-		configPath = ""
-		outputDir  = "dist"
+		configPath  = ""
+		outputDir   = "dist"
+		environment = "dev"
 	)
 
 	cmd := &cobra.Command{
@@ -86,7 +87,9 @@ Examples:
 			// Generate Infrastructure as Code
 			log.Printf("🏗️  Generating infrastructure definitions")
 			iacConfig := transire.IaCConfig{
-				StackName:         config.Name + "-stack",
+				StackName:         config.Name + "-" + environment,
+				AppName:           config.Name,
+				Environment:       environment,
 				FunctionGroups:    convertFunctionGroups(config.Functions),
 				HTTPHandlers:      project.HTTPHandlers,
 				QueueHandlers:     project.QueueHandlers,
@@ -109,6 +112,7 @@ Examples:
 	// Add flags
 	cmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to configuration file")
 	cmd.Flags().StringVarP(&outputDir, "output", "o", "dist", "Output directory for artifacts")
+	cmd.Flags().StringVarP(&environment, "environment", "e", "dev", "Target environment (dev, staging, prod)")
 
 	return cmd
 }
