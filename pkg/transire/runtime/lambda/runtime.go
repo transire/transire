@@ -1,8 +1,10 @@
+//go:build lambda
+
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package transire
+package lambda
 
 import (
 	"context"
@@ -11,28 +13,29 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/transire/transire/pkg/transire"
 )
 
 // contextKey is a custom type for context keys to avoid collisions
 type contextKey string
 
-// lambdaRuntime implements the Runtime interface for AWS Lambda
-type lambdaRuntime struct {
-	app *App
+// Runtime implements the transire.Runtime interface for AWS Lambda
+type Runtime struct {
+	app *transire.App
 }
 
-// newLambdaRuntime creates a new Lambda runtime
-func newLambdaRuntime() Runtime {
-	return &lambdaRuntime{}
+// NewLambdaRuntime creates a new Lambda runtime
+func NewLambdaRuntime() *Runtime {
+	return &Runtime{}
 }
 
 // Start begins processing in the Lambda environment
-func (r *lambdaRuntime) Start(ctx context.Context, app *App) error {
+func (r *Runtime) Start(ctx context.Context, app *transire.App) error {
 	r.app = app
 
 	// Start the AWS Lambda handler
@@ -41,18 +44,24 @@ func (r *lambdaRuntime) Start(ctx context.Context, app *App) error {
 }
 
 // Stop is not applicable for Lambda runtime
-func (r *lambdaRuntime) Stop(ctx context.Context) error {
+func (r *Runtime) Stop(ctx context.Context) error {
 	// Lambda runtime doesn't need explicit stopping
 	return nil
 }
 
 // IsLocal returns false since this is the Lambda runtime
-func (r *lambdaRuntime) IsLocal() bool {
+func (r *Runtime) IsLocal() bool {
 	return false
 }
 
+// CreateQueueProducer returns a queue producer for AWS Lambda
+func (r *Runtime) CreateQueueProducer() (transire.QueueProducer, error) {
+	// TODO: Implement AWS SQS queue producer
+	return nil, fmt.Errorf("queue producer not yet implemented for lambda runtime")
+}
+
 // handleLambdaEvent is the main Lambda handler that routes events
-func (r *lambdaRuntime) handleLambdaEvent(ctx context.Context, event json.RawMessage) (interface{}, error) {
+func (r *Runtime) handleLambdaEvent(ctx context.Context, event json.RawMessage) (interface{}, error) {
 	log.Printf("Received Lambda event: %s", string(event))
 
 	// Try to determine event type and route accordingly
@@ -68,7 +77,7 @@ func (r *lambdaRuntime) handleLambdaEvent(ctx context.Context, event json.RawMes
 }
 
 // handleHTTP processes API Gateway events
-func (r *lambdaRuntime) handleHTTP(ctx context.Context, event json.RawMessage) (events.APIGatewayV2HTTPResponse, error) {
+func (r *Runtime) handleHTTP(ctx context.Context, event json.RawMessage) (events.APIGatewayV2HTTPResponse, error) {
 	var apiEvent events.APIGatewayV2HTTPRequest
 	if err := json.Unmarshal(event, &apiEvent); err != nil {
 		return events.APIGatewayV2HTTPResponse{
@@ -95,7 +104,7 @@ func (r *lambdaRuntime) handleHTTP(ctx context.Context, event json.RawMessage) (
 }
 
 // handleQueue processes SQS events
-func (r *lambdaRuntime) handleQueue(ctx context.Context, event json.RawMessage) (events.SQSEventResponse, error) {
+func (r *Runtime) handleQueue(ctx context.Context, event json.RawMessage) (events.SQSEventResponse, error) {
 	var sqsEvent events.SQSEvent
 	if err := json.Unmarshal(event, &sqsEvent); err != nil {
 		return events.SQSEventResponse{}, fmt.Errorf("failed to unmarshal SQS event: %w", err)
@@ -142,7 +151,7 @@ func (r *lambdaRuntime) handleQueue(ctx context.Context, event json.RawMessage) 
 }
 
 // handleSchedule processes EventBridge events
-func (r *lambdaRuntime) handleSchedule(ctx context.Context, event json.RawMessage) (interface{}, error) {
+func (r *Runtime) handleSchedule(ctx context.Context, event json.RawMessage) (interface{}, error) {
 	var ebEvent events.CloudWatchEvent
 	if err := json.Unmarshal(event, &ebEvent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal EventBridge event: %w", err)
@@ -158,7 +167,7 @@ func (r *lambdaRuntime) handleSchedule(ctx context.Context, event json.RawMessag
 	}
 
 	// Create schedule event
-	schedEvent := ScheduleEvent{
+	schedEvent := transire.ScheduleEvent{
 		ScheduledTime: ebEvent.Time,
 		Name:          scheduleName,
 		EventID:       ebEvent.ID,
@@ -169,28 +178,28 @@ func (r *lambdaRuntime) handleSchedule(ctx context.Context, event json.RawMessag
 }
 
 // Event type detection helpers
-func (r *lambdaRuntime) isAPIGatewayEvent(event json.RawMessage) bool {
+func (r *Runtime) isAPIGatewayEvent(event json.RawMessage) bool {
 	eventStr := string(event)
 	hasRequestContext := strings.Contains(eventStr, "requestContext")
-	isV2 := strings.Contains(eventStr, "\"version\"") && strings.Contains(eventStr, "\"2.0\"") // API Gateway v2 HTTP API
-	isV1REST := strings.Contains(eventStr, "httpMethod")                                       // API Gateway v1 REST API
-	hasAPIGateway := strings.Contains(eventStr, "apigateway")                                  // Other API Gateway formats
+	isV2 := strings.Contains(eventStr, "\"version\"") && strings.Contains(eventStr, "\"2.0\"")
+	isV1REST := strings.Contains(eventStr, "httpMethod")
+	hasAPIGateway := strings.Contains(eventStr, "apigateway")
 
 	return hasRequestContext && (isV2 || isV1REST || hasAPIGateway)
 }
 
-func (r *lambdaRuntime) isSQSEvent(event json.RawMessage) bool {
+func (r *Runtime) isSQSEvent(event json.RawMessage) bool {
 	return strings.Contains(string(event), "Records") && strings.Contains(string(event), "eventSource") &&
 		strings.Contains(string(event), "aws:sqs")
 }
 
-func (r *lambdaRuntime) isEventBridgeEvent(event json.RawMessage) bool {
+func (r *Runtime) isEventBridgeEvent(event json.RawMessage) bool {
 	return strings.Contains(string(event), "source") && strings.Contains(string(event), "detail-type") &&
 		strings.Contains(string(event), "aws.events")
 }
 
 // Conversion helpers
-func (r *lambdaRuntime) apiGatewayToHTTPRequest(event events.APIGatewayV2HTTPRequest) (*http.Request, error) {
+func (r *Runtime) apiGatewayToHTTPRequest(event events.APIGatewayV2HTTPRequest) (*http.Request, error) {
 	// Create URL
 	url := fmt.Sprintf("https://%s%s", event.RequestContext.DomainName, event.RawPath)
 	if event.RawQueryString != "" {
@@ -210,14 +219,13 @@ func (r *lambdaRuntime) apiGatewayToHTTPRequest(event events.APIGatewayV2HTTPReq
 
 	// Set path parameters in context (Chi will handle this)
 	for key, value := range event.PathParameters {
-		// Store in request context for Chi
 		req = req.WithContext(context.WithValue(req.Context(), contextKey(key), value))
 	}
 
 	return req, nil
 }
 
-func (r *lambdaRuntime) httpResponseToAPIGateway(recorder *httptest.ResponseRecorder) events.APIGatewayV2HTTPResponse {
+func (r *Runtime) httpResponseToAPIGateway(recorder *httptest.ResponseRecorder) events.APIGatewayV2HTTPResponse {
 	headers := make(map[string]string)
 	for key, values := range recorder.Header() {
 		headers[key] = values[0]
@@ -230,24 +238,43 @@ func (r *lambdaRuntime) httpResponseToAPIGateway(recorder *httptest.ResponseReco
 	}
 }
 
-func (r *lambdaRuntime) extractQueueName(eventSourceARN string) string {
+func (r *Runtime) extractQueueName(eventSourceARN string) string {
 	// Extract queue name from ARN: arn:aws:sqs:region:account:queue-name
 	parts := strings.Split(eventSourceARN, ":")
 	if len(parts) >= 6 {
-		return parts[5]
+		fullQueueName := parts[5]
+		return r.queueNameToHandlerName(fullQueueName)
 	}
 	return "unknown"
 }
 
-func (r *lambdaRuntime) extractScheduleName(event events.CloudWatchEvent) string {
+// queueNameToHandlerName converts a CloudFormation queue name to a handler name
+// CloudFormation generates names like: {app-name}-{environment}-{logical-queue-name}
+// We need to strip the stack prefix (app-name-environment-) to get the logical name
+func (r *Runtime) queueNameToHandlerName(fullQueueName string) string {
+	// Get stack prefix from environment variables
+	appName := os.Getenv("TRANSIRE_APP_NAME")
+	environment := os.Getenv("TRANSIRE_ENVIRONMENT")
+
+	if appName != "" && environment != "" {
+		// Construct the expected prefix: {name}-{environment}-
+		expectedPrefix := appName + "-" + environment + "-"
+		if strings.HasPrefix(fullQueueName, expectedPrefix) {
+			return strings.TrimPrefix(fullQueueName, expectedPrefix)
+		}
+	}
+
+	// Fallback: return as-is if we can't determine the prefix
+	return fullQueueName
+}
+
+func (r *Runtime) extractScheduleName(event events.CloudWatchEvent) string {
 	// Try to extract from resources first
 	for _, resource := range event.Resources {
 		if strings.Contains(resource, "rule/") {
 			parts := strings.Split(resource, "/")
 			if len(parts) >= 2 {
 				ruleName := parts[len(parts)-1]
-				// Convert CloudFormation-generated rule name to handler name
-				// e.g., "todo-app-stack-CleanupCompletedTodosRuleF0BFE00D-ABCD123" -> "cleanup-completed-todos"
 				return r.ruleNameToHandlerName(ruleName)
 			}
 		}
@@ -262,106 +289,29 @@ func (r *lambdaRuntime) extractScheduleName(event events.CloudWatchEvent) string
 }
 
 // ruleNameToHandlerName converts a CloudFormation rule name to a handler name
-// It extracts the PascalCase portion and converts it to kebab-case
-func (r *lambdaRuntime) ruleNameToHandlerName(ruleName string) string {
-	// Pattern: prefix-PascalCaseRuleSuffix-cfnHash
-	// We want to extract "PascalCase" and convert to "pascal-case"
+// CloudFormation generates names like: {app-name}-{environment}-{logical-schedule-name}
+// We need to strip the stack prefix to get the logical name
+func (r *Runtime) ruleNameToHandlerName(ruleName string) string {
+	// Get stack prefix from environment variables
+	appName := os.Getenv("TRANSIRE_APP_NAME")
+	environment := os.Getenv("TRANSIRE_ENVIRONMENT")
 
-	// First, try to find the pattern with "Rule" in it
-	// Look for uppercase letter followed by "Rule"
-	var extracted string
-
-	// Find segments that look like CloudFormation logical resource names (PascalCase)
-	// They typically contain "Rule" and end with a CloudFormation hash
-	ruleIdx := strings.Index(ruleName, "Rule")
-	if ruleIdx > 0 {
-		// Find the start of the PascalCase part (first uppercase after hyphens)
-		start := 0
-		for i := ruleIdx - 1; i >= 0; i-- {
-			if ruleName[i] == '-' {
-				start = i + 1
-				break
-			}
+	if appName != "" && environment != "" {
+		// Construct the expected prefix: {name}-{environment}-
+		expectedPrefix := appName + "-" + environment + "-"
+		if strings.HasPrefix(ruleName, expectedPrefix) {
+			return strings.TrimPrefix(ruleName, expectedPrefix)
 		}
-
-		// Extract from start to just before "Rule" suffix
-		// e.g., "CleanupCompletedTodosRule" -> "CleanupCompletedTodos"
-		extracted = ruleName[start:ruleIdx]
-
-		// Remove any remaining CloudFormation hash suffix
-		// Find next hyphen after "Rule"
-		remaining := ruleName[ruleIdx+4:] // Skip "Rule"
-		nextHyphen := strings.Index(remaining, "-")
-		if nextHyphen == -1 {
-			// No more hyphens, check if there's a CloudFormation hash at the end
-			// CloudFormation hashes are typically alphanumeric uppercase
-			if len(remaining) > 0 && isCloudFormationHash(remaining) {
-				// This is just "Rule" + hash, so we use the extracted part
-			} else {
-				// Include any suffix after "Rule" that's not a hash
-				extracted += remaining
-			}
-		}
-	} else {
-		// No "Rule" found, just use the whole name
-		extracted = ruleName
 	}
 
-	// Convert PascalCase to kebab-case
-	return pascalToKebab(extracted)
+	// Fallback: return as-is if we can't determine the prefix
+	return ruleName
 }
 
-// isCloudFormationHash checks if a string looks like a CloudFormation hash
-func isCloudFormationHash(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-	// CloudFormation hashes are typically 8-12 characters, alphanumeric, mixed case
-	if len(s) < 8 || len(s) > 16 {
-		return false
-	}
-	for _, c := range s {
-		if (c < 'A' || c > 'Z') && (c < 'a' || c > 'z') && (c < '0' || c > '9') {
-			return false
-		}
-	}
-	return true
-}
-
-// pascalToKebab converts PascalCase to kebab-case
-func pascalToKebab(s string) string {
-	if len(s) == 0 {
-		return s
-	}
-
-	var result []rune
-	for i, r := range s {
-		// Add hyphen before uppercase letters (except the first character)
-		if i > 0 && r >= 'A' && r <= 'Z' {
-			// Don't add hyphen if previous char was also uppercase (for acronyms like "API")
-			// unless this is the last char or next char is lowercase
-			prevUpper := i > 0 && s[i-1] >= 'A' && s[i-1] <= 'Z'
-			nextLower := i < len(s)-1 && s[i+1] >= 'a' && s[i+1] <= 'z'
-
-			if !prevUpper || nextLower {
-				result = append(result, '-')
-			}
-		}
-		// Convert to lowercase
-		if r >= 'A' && r <= 'Z' {
-			result = append(result, r+32)
-		} else {
-			result = append(result, r)
-		}
-	}
-
-	return string(result)
-}
-
-func (r *lambdaRuntime) sqsRecordsToMessages(records []events.SQSMessage) []Message {
-	messages := make([]Message, len(records))
+func (r *Runtime) sqsRecordsToMessages(records []events.SQSMessage) []transire.Message {
+	messages := make([]transire.Message, len(records))
 	for i, record := range records {
-		messages[i] = &sqsMessage{
+		messages[i] = &Message{
 			id:         record.MessageId,
 			body:       []byte(record.Body),
 			attributes: record.MessageAttributes,
@@ -370,37 +320,9 @@ func (r *lambdaRuntime) sqsRecordsToMessages(records []events.SQSMessage) []Mess
 	return messages
 }
 
-// sqsMessage implements the Message interface for SQS messages
-type sqsMessage struct {
-	id         string
-	body       []byte
-	attributes map[string]events.SQSMessageAttribute
-}
-
-func (m *sqsMessage) ID() string {
-	return m.id
-}
-
-func (m *sqsMessage) Body() []byte {
-	return m.body
-}
-
-func (m *sqsMessage) Attributes() map[string]string {
-	attrs := make(map[string]string)
-	for key, attr := range m.attributes {
-		if attr.StringValue != nil {
-			attrs[key] = *attr.StringValue
-		}
-	}
-	return attrs
-}
-
-func (m *sqsMessage) DeliveryCount() int {
-	// SQS doesn't directly expose delivery count, would need to track separately
-	return 1
-}
-
-func (m *sqsMessage) EnqueuedAt() time.Time {
-	// Would need to extract from message attributes or approximate
-	return time.Now()
+// init registers the Lambda runtime during package initialization
+func init() {
+	transire.RegisterDefaultRuntime(func(config *transire.Config) transire.Runtime {
+		return NewLambdaRuntime()
+	})
 }

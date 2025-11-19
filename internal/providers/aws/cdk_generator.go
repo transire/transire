@@ -120,6 +120,8 @@ export class {{.StackClassName}} extends cdk.Stack {
       timeout: cdk.Duration.seconds({{.TimeoutSeconds}}),
       memorySize: {{.MemoryMB}},
       environment: {
+        'TRANSIRE_APP_NAME': '{{$.AppName}}',
+        'TRANSIRE_ENVIRONMENT': '{{$.Environment}}',
 {{range $key, $value := .Environment}}        '{{$key}}': '{{$value}}',
 {{end}}      },
     });
@@ -257,6 +259,8 @@ func (g *CDKGenerator) generateTSConfig(infraDir string) error {
 func (g *CDKGenerator) buildStackData(config transire.IaCConfig) interface{} {
 	data := struct {
 		StackClassName    string
+		AppName           string
+		Environment       string
 		Functions         []FunctionData
 		HasHTTPHandlers   bool
 		MainFunctionVar   string
@@ -265,6 +269,8 @@ func (g *CDKGenerator) buildStackData(config transire.IaCConfig) interface{} {
 		Schedules         []ScheduleData
 	}{
 		StackClassName: toPascalCase(config.StackName) + "Stack",
+		AppName:        config.AppName,
+		Environment:    config.Environment,
 	}
 
 	// Build function data

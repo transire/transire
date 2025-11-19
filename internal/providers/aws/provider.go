@@ -6,7 +6,6 @@ package aws
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/transire/transire/pkg/transire"
 )
@@ -49,16 +48,4 @@ func (p *Provider) GenerateIaC(ctx context.Context, config transire.IaCConfig) e
 func (p *Provider) Deploy(ctx context.Context, config transire.DeployConfig) error {
 	deployer := NewCDKDeployer(p.region)
 	return deployer.Deploy(ctx, config)
-}
-
-// CreateRuntime returns a runtime implementation for AWS
-func (p *Provider) CreateRuntime(ctx context.Context, config transire.RuntimeConfig) (transire.Runtime, error) {
-	switch config.Runtime {
-	case "lambda":
-		return NewLambdaRuntime(), nil
-	case "ecs":
-		return nil, fmt.Errorf("ECS runtime not implemented yet")
-	default:
-		return nil, fmt.Errorf("unsupported AWS runtime: %s", config.Runtime)
-	}
 }

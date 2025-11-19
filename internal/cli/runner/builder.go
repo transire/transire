@@ -46,8 +46,8 @@ func (b *Builder) Build() (string, error) {
 	// Determine output path
 	outputPath := b.GetOutputPath()
 
-	// Build the application
-	cmd := exec.Command("go", "build", "-o", outputPath, ".")
+	// Build the application with local runtime tag
+	cmd := exec.Command("go", "build", "-tags=local", "-o", outputPath, ".")
 	cmd.Dir = b.projectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
