@@ -1,5 +1,10 @@
 Transire is a cloud-agnostic Go webapp framework. User code stays portable while dispatchers handle cloud specifics (local and AWS to start). HTTP handlers use chi; queue and schedule handlers share a cloud-agnostic context that can enqueue messages. Handlers are discovered from user code at build time so no handler definitions live in config.
 
+## Install via Go
+
+- CLI (global): `go install github.com/transire/transire/cmd/transire@latest` (binary lands in `$GOBIN` or `$(go env GOPATH)/bin`).
+- Framework: `go get github.com/transire/transire@latest` inside your module to import Transire packages in existing projects.
+
 ## What you get
 
 - CLI that scaffolds, runs locally, and inspects discovered handlers.
@@ -8,7 +13,7 @@ Transire is a cloud-agnostic Go webapp framework. User code stays portable while
 
 ## Quickstart (minutes)
 
-- Install: `go install ./cmd/transire`
+- Install CLI: `go install github.com/transire/transire/cmd/transire@latest`
 - Scaffold: `transire init my-app && cd my-app`
 - Run locally: `transire run --port 8080` (auto-restarts on code changes)
   - HTTP: `curl "http://localhost:8080/?msg=hi"`
