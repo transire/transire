@@ -8,11 +8,15 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${repo_root}"
 
 echo "==> gofmt"
-mapfile -t go_files < <(find . \
-  -path './.git' -prune -o \
-  -path './examples/all-handlers-cli/dist' -prune -o \
-  -name 'node_modules' -prune -o \
-  -name '*.go' -print)
+if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  mapfile -t go_files < <(git ls-files -- '*.go')
+else
+  mapfile -t go_files < <(find . \
+    -path './.git' -prune -o \
+    -path './examples/all-handlers-cli/dist' -prune -o \
+    -name 'node_modules' -prune -o \
+    -name '*.go' -print)
+fi
 if ((${#go_files[@]})); then
   unformatted=$(gofmt -l "${go_files[@]}" || true)
   if [[ -n "${unformatted}" ]]; then
