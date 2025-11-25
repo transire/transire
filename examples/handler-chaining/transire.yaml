@@ -1,0 +1,8 @@
+app:
+  name: handler-chaining
+aws:
+  region: eu-west-2
+envs:
+  dev:
+    profile: transire-sandbox
+    region: eu-west-2

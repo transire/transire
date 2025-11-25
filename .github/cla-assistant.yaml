@@ -1,0 +1,8 @@
+# Configuration used by the CLA Assistant workflow.
+# The workflow consumes these values directly; adjust only if branches/paths change.
+path_to_document: .github/cla.md
+path_to_signatures: signatures/cla.json
+signatures_branch: cla-signatures
+allowlist:
+  - dependabot[bot]
+  - github-actions[bot]
