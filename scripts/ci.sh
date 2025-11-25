@@ -8,7 +8,11 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${repo_root}"
 
 echo "==> gofmt"
-mapfile -t go_files < <(find . -name '*.go' -not -path './.git/*')
+mapfile -t go_files < <(find . \
+  -path './.git' -prune -o \
+  -path './examples/all-handlers-cli/dist' -prune -o \
+  -name 'node_modules' -prune -o \
+  -name '*.go' -print)
 if ((${#go_files[@]})); then
   unformatted=$(gofmt -l "${go_files[@]}" || true)
   if [[ -n "${unformatted}" ]]; then
