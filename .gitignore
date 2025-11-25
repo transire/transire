@@ -17,6 +17,7 @@ bin/
 dist/
 coverage.out
 profile*.out
+examples/all-handlers-cli/dist/
 
 # Modules and deps
 vendor/
