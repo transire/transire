@@ -36,6 +36,11 @@ func BuildAWS(ctx context.Context, projectRoot string, manifest config.Manifest,
 	}
 
 	bootstrapPath := filepath.Join(lambdaDir, "bootstrap")
+	mainPath := filepath.Join(projectRoot, "cmd", "app")
+	if info, err := os.Stat(mainPath); err != nil || !info.IsDir() {
+		return fmt.Errorf("build lambda: expected main package at ./cmd/app (create it or move your existing main there)")
+	}
+
 	buildCmd := exec.CommandContext(ctx, "go", "build", "-o", bootstrapPath, "./cmd/app")
 	buildCmd.Dir = projectRoot
 	buildCmd.Env = append(os.Environ(),
