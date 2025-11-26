@@ -12,7 +12,6 @@ type envSettings struct {
 }
 
 func resolveEnv(m config.Manifest, envFlag string, profileFlag string, regionFlag string) envSettings {
-	// Start from manifest defaults
 	profile := profileFlag
 	region := regionFlag
 
@@ -21,18 +20,12 @@ func resolveEnv(m config.Manifest, envFlag string, profileFlag string, regionFla
 			if profile == "" && envCfg.Profile != "" {
 				profile = envCfg.Profile
 			}
-			if region == "" && envCfg.Region != "" {
-				region = envCfg.Region
-			}
 		}
 	}
 
 	// Fallbacks
 	if profile == "" {
 		profile = "transire-sandbox"
-	}
-	if region == "" {
-		region = m.AWS.Region
 	}
 	return envSettings{profile: profile, region: region}
 }

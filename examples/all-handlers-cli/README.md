@@ -11,8 +11,8 @@ This app shows every Transire handler type working together. HTTP requests enque
 
 ## AWS (profile: transire-sandbox)
 
-- Deploy: `transire deploy --profile transire-sandbox --env dev`
-- Find endpoints/queues: `transire info --env dev --profile transire-sandbox --region us-east-1`
+- Deploy (ensure your AWS default region is `us-east-1` or export `AWS_REGION`/`AWS_DEFAULT_REGION`): `AWS_REGION=us-east-1 AWS_DEFAULT_REGION=us-east-1 transire deploy --profile transire-sandbox --env dev`
+- Find endpoints/queues: `transire info --env dev --profile transire-sandbox`
 - Exercise HTTP: `curl "https://<api-endpoint>/?msg=hello-aws"`
-- Send a queue message: `transire send work-events '{"source":"cli","detail":"aws send"}' --env dev --profile transire-sandbox --region us-east-1`
-- Trigger the schedule: `transire trigger heartbeat --env dev --profile transire-sandbox --region us-east-1`
+- Send a queue message: `transire send work-events '{"source":"cli","detail":"aws send"}' --env dev --profile transire-sandbox`
+- Trigger the schedule: `transire trigger heartbeat --env dev --profile transire-sandbox`

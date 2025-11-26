@@ -29,6 +29,7 @@ func Generate(targetDir, moduleName string) error {
 		"handlers/queue.go":    queueTemplate(),
 		"handlers/schedule.go": scheduleTemplate(),
 		"handlers/model.go":    modelTemplate(),
+		"infra/.gitkeep":       "",
 		"LICENSE":              mitLicense,
 		"go.mod":               goModTemplate(moduleName),
 		".gitignore":           gitignoreTemplate,
@@ -207,22 +208,19 @@ This project was bootstrapped by "transire init". It shows HTTP, queue, and sche
 ## AWS (profile: transire-sandbox)
 
 - Deploy: transire deploy --profile transire-sandbox --env dev
-- Find endpoints/queues: transire info --env dev --profile transire-sandbox --region us-east-1
+- Find endpoints/queues: transire info --env dev --profile transire-sandbox
 - HTTP: curl "https://<api-endpoint>/?msg=hi"
-- Queue: transire send work "manual message" --env dev --profile transire-sandbox --region us-east-1
-- Schedule: transire trigger heartbeat --env dev --profile transire-sandbox --region us-east-1
+- Queue: transire send work "manual message" --env dev --profile transire-sandbox
+- Schedule: transire trigger heartbeat --env dev --profile transire-sandbox
 `) + "\n"
 
 func manifestTemplate(module string) string {
 	name := filepath.Base(module)
 	return fmt.Sprintf(`app:
   name: %s
-aws:
-  region: us-east-1
 envs:
   dev:
     profile: transire-sandbox
-    region: us-east-1
 `, name)
 }
 

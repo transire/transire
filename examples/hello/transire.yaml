@@ -1,4 +1,2 @@
 app:
   name: transire-hello
-aws:
-  region: us-east-1

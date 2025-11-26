@@ -1,5 +1,5 @@
 app:
-  name: transire-all-handlers-cli
+  name: transire-handlers-guide
 envs:
   dev:
     profile: transire-sandbox

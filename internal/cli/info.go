@@ -91,7 +91,7 @@ func newInfoCmd() *cobra.Command {
 	cmd.Flags().StringVar(&manifestPath, "manifest", "", "path to transire.yaml (defaults to ./transire.yaml)")
 	cmd.Flags().StringVar(&env, "env", "", "environment key from transire.yaml envs section to fetch outputs")
 	cmd.Flags().StringVar(&profile, "profile", "transire-sandbox", "AWS profile to use when fetching outputs")
-	cmd.Flags().StringVar(&region, "region", "", "AWS region (defaults to manifest aws.region)")
+	cmd.Flags().StringVar(&region, "region", "", "AWS region (overrides AWS SDK defaults when set)")
 	return cmd
 }
 

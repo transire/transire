@@ -17,15 +17,11 @@ type Manifest struct {
 	App struct {
 		Name string `yaml:"name"`
 	} `yaml:"app"`
-	AWS struct {
-		Region string `yaml:"region"`
-	} `yaml:"aws"`
 	Environments map[string]Environment `yaml:"envs"`
 }
 
 type Environment struct {
 	Profile string `yaml:"profile"`
-	Region  string `yaml:"region"`
 }
 
 // LoadManifest reads transire.yaml from the given path. If missing, it returns defaults.

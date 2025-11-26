@@ -1,8 +1,5 @@
 app:
   name: transire-all-handlers
-aws:
-  region: us-east-1
 envs:
   dev:
     profile: transire-sandbox
-    region: us-east-1
