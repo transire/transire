@@ -9,9 +9,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/transire/transire/internal/version"
 )
-
-var version = "0.1.0"
 
 // Execute runs the CLI.
 func Execute() error {
@@ -36,7 +35,7 @@ func newRootCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print the version",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(version)
+			fmt.Println(version.Version)
 		},
 	})
 	return cmd
