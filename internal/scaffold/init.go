@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/transire/transire/internal/version"
 )
 
 // Generate creates a starter Transire project in the target directory.
@@ -179,11 +181,9 @@ go 1.25.4
 
 require (
 	github.com/go-chi/chi/v5 v5.2.3
-	github.com/transire/transire v0.0.0
+	github.com/transire/transire %s
 )
-
-replace github.com/transire/transire => ..
-`, module)
+`, module, version.Version)
 }
 
 var gitignoreTemplate = strings.TrimSpace(`
