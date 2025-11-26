@@ -14,8 +14,8 @@ Bootstrapped with `transire init`, this app shows HTTP, queue, and schedule hand
 ## AWS (profile: transire-sandbox)
 
 - Deploy: `transire deploy --profile transire-sandbox --env dev`
-- Find endpoints/queues: `transire info --env dev --profile transire-sandbox --region eu-west-2`
+- Find endpoints/queues: `transire info --env dev --profile transire-sandbox`
 - HTTP: `curl "https://<api-endpoint>/?msg=hi"`
-- Queue: `transire send work "manual message" --env dev --profile transire-sandbox --region eu-west-2`
-- Schedule: `transire trigger heartbeat --env dev --profile transire-sandbox --region eu-west-2`
-- Tail: use `aws logs tail /aws/lambda/handler-chaining-dev --profile transire-sandbox --since 5m --follow --region eu-west-2` to watch queue fan-out logs.
+- Queue: `transire send work "manual message" --env dev --profile transire-sandbox`
+- Schedule: `transire trigger heartbeat --env dev --profile transire-sandbox`
+- Tail: use `aws logs tail /aws/lambda/handler-chaining-dev --profile transire-sandbox --since 5m --follow` to watch queue fan-out logs.

@@ -12,7 +12,7 @@ This project was bootstrapped by "transire init". It shows HTTP, queue, and sche
 ## AWS (profile: transire-sandbox)
 
 - Deploy: `transire deploy --profile transire-sandbox --env dev`
-- Find endpoints/queues: `transire info --env dev --profile transire-sandbox --region us-east-1`
+- Find endpoints/queues: `transire info --env dev --profile transire-sandbox`
 - HTTP: `curl "https://<api-endpoint>/?msg=hi"`
-- Queue: `transire send work "manual message" --env dev --profile transire-sandbox --region us-east-1`
-- Schedule: `transire trigger heartbeat --env dev --profile transire-sandbox --region us-east-1`
+- Queue: `transire send work "manual message" --env dev --profile transire-sandbox`
+- Schedule: `transire trigger heartbeat --env dev --profile transire-sandbox`

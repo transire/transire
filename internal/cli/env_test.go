@@ -13,12 +13,11 @@ import (
 func TestResolveEnvUsesManifestEnv(t *testing.T) {
 	m := config.Manifest{
 		Environments: map[string]config.Environment{
-			"dev": {Profile: "dev-prof", Region: "eu-west-2"},
+			"dev": {Profile: "dev-prof"},
 		},
 	}
-	m.AWS.Region = "us-east-1"
 	res := resolveEnv(m, "dev", "", "")
-	if res.profile != "dev-prof" || res.region != "eu-west-2" {
+	if res.profile != "dev-prof" || res.region != "" {
 		t.Fatalf("unexpected env settings: %+v", res)
 	}
 }
@@ -26,10 +25,9 @@ func TestResolveEnvUsesManifestEnv(t *testing.T) {
 func TestResolveEnvFlagOverrides(t *testing.T) {
 	m := config.Manifest{
 		Environments: map[string]config.Environment{
-			"dev": {Profile: "dev-prof", Region: "eu-west-2"},
+			"dev": {Profile: "dev-prof"},
 		},
 	}
-	m.AWS.Region = "us-east-1"
 	res := resolveEnv(m, "dev", "override-prof", "ap-southeast-1")
 	if res.profile != "override-prof" || res.region != "ap-southeast-1" {
 		t.Fatalf("overrides not applied: %+v", res)
@@ -38,9 +36,8 @@ func TestResolveEnvFlagOverrides(t *testing.T) {
 
 func TestResolveEnvDefaults(t *testing.T) {
 	m := config.Manifest{}
-	m.AWS.Region = "us-east-1"
 	res := resolveEnv(m, "", "", "")
-	if res.profile != "transire-sandbox" || res.region != "us-east-1" {
+	if res.profile != "transire-sandbox" || res.region != "" {
 		t.Fatalf("defaults not applied: %+v", res)
 	}
 }

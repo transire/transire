@@ -88,7 +88,7 @@ func newSendCmd() *cobra.Command {
 	cmd.Flags().StringVar(&manifestPath, "manifest", "", "path to transire.yaml (defaults to ./transire.yaml)")
 	cmd.Flags().BoolVar(&base64Data, "base64", false, "interpret message as base64")
 	cmd.Flags().StringVar(&profile, "profile", "transire-sandbox", "AWS profile to use")
-	cmd.Flags().StringVar(&region, "region", "", "AWS region (defaults to manifest aws.region)")
+	cmd.Flags().StringVar(&region, "region", "", "AWS region (overrides AWS SDK defaults when set)")
 	cmd.Flags().StringVar(&env, "env", "", "environment key from transire.yaml envs section")
 	return cmd
 }

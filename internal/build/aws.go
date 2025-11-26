@@ -58,11 +58,28 @@ func BuildAWS(ctx context.Context, projectRoot string, manifest config.Manifest,
 		return err
 	}
 
-	if err := writeCDK(cdkDir, manifest, layout); err != nil {
+	hasExtend := fileExists(filepath.Join(projectRoot, "infra", "extend.ts"))
+	if err := writeCDK(cdkDir, manifest, layout, hasExtend); err != nil {
 		return err
 	}
 
+	// Symlink infra/ into dist/aws/cdk/ for module resolution
+	if hasExtend {
+		infraSrc := filepath.Join(projectRoot, "infra")
+		infraDst := filepath.Join(cdkDir, "infra")
+		// Remove existing symlink if present
+		_ = os.Remove(infraDst)
+		if err := os.Symlink(infraSrc, infraDst); err != nil {
+			return fmt.Errorf("symlink infra: %w", err)
+		}
+	}
+
 	return nil
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 func zipSingle(dir, filename, zipPath string) error {
@@ -103,7 +120,7 @@ func zipSingle(dir, filename, zipPath string) error {
 	return zw.Close()
 }
 
-func writeCDK(dir string, manifest config.Manifest, layout discover.Layout) error {
+func writeCDK(dir string, manifest config.Manifest, layout discover.Layout, hasExtend bool) error {
 	appName := manifest.App.Name
 	if appName == "" {
 		appName = "transire-app"
@@ -111,10 +128,10 @@ func writeCDK(dir string, manifest config.Manifest, layout discover.Layout) erro
 
 	files := map[string]string{
 		"package.json":     cdkPackageJSON(),
-		"tsconfig.json":    tsconfigJSON(),
-		"cdk.json":         cdkJSON(),
+		"tsconfig.json":    tsconfigJSON(hasExtend),
+		"cdk.json":         cdkJSON(hasExtend),
 		"bin/app.ts":       binAppTS(appName),
-		"lib/app-stack.ts": libStackTS(appName, manifest, layout),
+		"lib/app-stack.ts": libStackTS(appName, manifest, layout, hasExtend),
 	}
 
 	for rel, contents := range files {
@@ -138,12 +155,12 @@ func cdkPackageJSON() string {
     "cdk": "cdk/bin/cdk.js"
   },
   "scripts": {
-    "build": "ts-node --esm bin/app.ts",
+    "build": "npx tsx bin/app.ts",
     "cdk": "cdk"
   },
   "devDependencies": {
     "aws-cdk": "2.152.0",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.19.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
@@ -155,8 +172,14 @@ func cdkPackageJSON() string {
 `
 }
 
-func tsconfigJSON() string {
-	return `{
+func tsconfigJSON(hasExtend bool) string {
+	include := ""
+	if hasExtend {
+		// infra/ is symlinked into dist/aws/cdk/infra
+		include = `,
+  "include": ["bin/**/*", "lib/**/*", "infra/**/*"]`
+	}
+	return fmt.Sprintf(`{
   "compilerOptions": {
     "target": "ES2020",
     "module": "ES2020",
@@ -166,17 +189,22 @@ func tsconfigJSON() string {
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "types": ["node"]
-  }
+  }%s
 }
-`
+`, include)
 }
 
-func cdkJSON() string {
-	return `{
-  "app": "npx ts-node --esm bin/app.ts",
+func cdkJSON(hasExtend bool) string {
+	// When extending, set NODE_PATH so infra/ can resolve aws-cdk-lib from cdk's node_modules
+	app := "npx tsx bin/app.ts"
+	if hasExtend {
+		app = "NODE_PATH=$PWD/node_modules npx tsx bin/app.ts"
+	}
+	return fmt.Sprintf(`{
+  "app": "%s",
   "context": {}
 }
-`
+`, app)
 }
 
 func binAppTS(appName string) string {
@@ -190,7 +218,7 @@ new TransireStack(app, "%s-stack", {});
 `, appName)
 }
 
-func libStackTS(appName string, manifest config.Manifest, layout discover.Layout) string {
+func libStackTS(appName string, manifest config.Manifest, layout discover.Layout, hasExtend bool) string {
 	var queueDecls []string
 	var queueSources []string
 	var queueOutputs []string
@@ -200,7 +228,10 @@ func libStackTS(appName string, manifest config.Manifest, layout discover.Layout
 		id := safeID(q.Name)
 		envVars = append(envVars, fmt.Sprintf("      \"%s%s_URL\": %s.queueUrl", queueEnvPrefix, upper, id))
 		envVars = append(envVars, fmt.Sprintf("      \"%s%s%s\": appName + \"-%s-\" + env", queueEnvPrefix, upper, queueNameEnvSuffix, q.Name))
-		queueDecls = append(queueDecls, fmt.Sprintf("    const %s = new sqs.Queue(this, \"%sQueue\", {\n      queueName: appName + \"-%s-\" + env,\n    });", id, id, q.Name))
+		// AWS requires SQS visibility timeout >= Lambda timeout for event source mappings
+		// We use 6x the Lambda timeout as recommended by AWS
+		visibilityTimeout := queueVisibilityTimeout(hasExtend)
+		queueDecls = append(queueDecls, fmt.Sprintf("    const %s = new sqs.Queue(this, \"%sQueue\", {\n      queueName: appName + \"-%s-\" + env,\n      visibilityTimeout: %s,\n    });", id, id, q.Name, visibilityTimeout))
 		queueSources = append(queueSources, fmt.Sprintf("    fn.addEventSource(new lambdaEventSources.SqsEventSource(%s));\n    %s.grantSendMessages(fn);", id, id))
 		queueOutputs = append(queueOutputs, fmt.Sprintf("    new cdk.CfnOutput(this, \"%sQueueUrl\", { value: %s.queueUrl });", id, id))
 	}
@@ -215,9 +246,28 @@ func libStackTS(appName string, manifest config.Manifest, layout discover.Layout
 		scheduleOutputs = append(scheduleOutputs, fmt.Sprintf("    new cdk.CfnOutput(this, \"%sScheduleName\", { value: appName + \"-%s-\" + env });", safeID(s.Name), s.Name))
 	}
 
+	// Add config.environment spread when extending
+	if hasExtend {
+		envVars = append(envVars, "      ...config.environment")
+	}
+
 	envBlock := strings.Join(envVars, ",\n")
 	if envBlock != "" {
-		envBlock = "\n" + envBlock + "\n    "
+		envBlock = "\n" + envBlock + ",\n    "
+	}
+
+	extendImport := ""
+	configureCall := ""
+	extendCall := ""
+	if hasExtend {
+		// infra/ is symlinked into dist/aws/cdk/infra, so path is relative from lib/
+		// Use default import for CJS/ESM interop - tsx transpiles TS to CJS where exports are on default
+		extendImport = `import infra from "../infra/extend.ts";
+`
+		configureCall = `
+    const config = infra.configure?.(this, env) ?? {};`
+		extendCall = `
+    infra.extend?.(this, fn, env);`
 	}
 
 	return fmt.Sprintf(`import * as path from "node:path";
@@ -231,7 +281,7 @@ import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as lambdaEventSources from "aws-cdk-lib/aws-lambda-event-sources";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
-
+%s
 export class TransireStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -240,17 +290,18 @@ export class TransireStack extends cdk.Stack {
     const __dirname = path.dirname(__filename);
     const env = (this.node.tryGetContext("env") as string) ?? "dev";
     const appName = "%s";
-
+%s
 %s
 
     const fn = new lambda.Function(this, "TransireLambda", {
       runtime: lambda.Runtime.PROVIDED_AL2,
       handler: "bootstrap",
       code: lambda.Code.fromAsset(path.join(__dirname, "..", "..", "lambda", "bootstrap.zip")),
-      memorySize: 512,
-      timeout: cdk.Duration.seconds(30),
+      memorySize: %s,
+      timeout: %s,
       functionName: appName + "-lambda-" + env,
       environment: {%s},
+      ...%s,
     });
 
     const api = new apigwv2.HttpApi(this, "HttpApi", {
@@ -270,14 +321,49 @@ export class TransireStack extends cdk.Stack {
     });
 
 %s
-
+%s
     new cdk.CfnOutput(this, "ApiEndpoint", { value: api.apiEndpoint });
     new cdk.CfnOutput(this, "LambdaName", { value: fn.functionName });
 %s
 %s
   }
 }
-`, appName, strings.Join(queueDecls, "\n"), envBlock, strings.Join(queueSources, "\n"), strings.Join(scheduleDecls, "\n"), strings.Join(queueOutputs, "\n"), strings.Join(scheduleOutputs, "\n"))
+`, extendImport, appName, configureCall, strings.Join(queueDecls, "\n"), lambdaMemory(hasExtend), lambdaTimeout(hasExtend), envBlock, lambdaConfigSpread(hasExtend), strings.Join(queueSources, "\n"), strings.Join(scheduleDecls, "\n"), extendCall, strings.Join(queueOutputs, "\n"), strings.Join(scheduleOutputs, "\n"))
+}
+
+func lambdaMemory(hasExtend bool) string {
+	if hasExtend {
+		return "config.memorySize ?? 512"
+	}
+	return "512"
+}
+
+func lambdaTimeout(hasExtend bool) string {
+	if hasExtend {
+		return "config.timeout ?? cdk.Duration.seconds(30)"
+	}
+	return "cdk.Duration.seconds(30)"
+}
+
+func lambdaConfigSpread(hasExtend bool) string {
+	if hasExtend {
+		// Spread remaining config properties (vpc, vpcSubnets, securityGroups, etc.)
+		// Exclude properties we handle explicitly to avoid duplication
+		return `(({ memorySize, timeout, environment, ...rest }) => rest)(config)`
+	}
+	return "{}"
+}
+
+func queueVisibilityTimeout(hasExtend bool) string {
+	// AWS requires SQS visibility timeout >= Lambda timeout for event source mappings
+	// We use 6x the Lambda timeout as recommended by AWS
+	if hasExtend {
+		// When extending, use 6x the config.timeout (or default 30s if not specified)
+		// This creates a dynamic expression that calculates based on the actual timeout
+		return "cdk.Duration.seconds(((config.timeout?.toSeconds() ?? 30) * 6))"
+	}
+	// Default: 30s timeout * 6 = 180s = 3 minutes
+	return "cdk.Duration.seconds(180)"
 }
 
 func safeID(name string) string {
