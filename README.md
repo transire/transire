@@ -37,6 +37,8 @@ transire deploy --profile <aws-profile> --env <env>
 
 Requires AWS credentials and a bootstrapped CDK environment. CDK resources are named `${app}-${logical}-${env}` (queues, schedules, API, lambda). Transire maps logical queue names used in code to fully-qualified queue names via environment variables. Build artifacts are environment-agnostic; only deploy is env-specific.
 
+Transire expects your main package at `./cmd/app`. If you started with an older layout, move your entrypoint there before running `transire build` or `transire deploy`.
+
 ## Developing this repository
 
 - Run all validation locally with `./scripts/ci.sh` (gofmt check, go vet, go test for the main module and examples, and `go build ./cmd/transire`). The GitHub Actions workflow executes the same script on every pull request.

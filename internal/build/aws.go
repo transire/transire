@@ -36,12 +36,12 @@ func BuildAWS(ctx context.Context, projectRoot string, manifest config.Manifest,
 	}
 
 	bootstrapPath := filepath.Join(lambdaDir, "bootstrap")
-	mainPkg, err := resolveMainPackage(projectRoot)
-	if err != nil {
-		return fmt.Errorf("build lambda: %w", err)
+	mainPath := filepath.Join(projectRoot, "cmd", "app")
+	if info, err := os.Stat(mainPath); err != nil || !info.IsDir() {
+		return fmt.Errorf("build lambda: expected main package at ./cmd/app (create it or move your existing main there)")
 	}
 
-	buildCmd := exec.CommandContext(ctx, "go", "build", "-o", bootstrapPath, mainPkg)
+	buildCmd := exec.CommandContext(ctx, "go", "build", "-o", bootstrapPath, "./cmd/app")
 	buildCmd.Dir = projectRoot
 	buildCmd.Env = append(os.Environ(),
 		"GOOS=linux",
@@ -63,30 +63,6 @@ func BuildAWS(ctx context.Context, projectRoot string, manifest config.Manifest,
 	}
 
 	return nil
-}
-
-func resolveMainPackage(projectRoot string) (string, error) {
-	defaultPath := filepath.Join(projectRoot, "cmd", "app")
-	if info, err := os.Stat(defaultPath); err == nil && info.IsDir() {
-		return "./cmd/app", nil
-	}
-
-	listCmd := exec.Command("go", "list", "-f", "{{if eq .Name \"main\"}}{{.ImportPath}}{{end}}", "./...")
-	listCmd.Dir = projectRoot
-	out, err := listCmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("locate main package: %w", err)
-	}
-	trimmed := strings.TrimSpace(string(out))
-	if trimmed == "" {
-		return "", fmt.Errorf("no main package found (expected ./cmd/app or any main package in module)")
-	}
-	for _, line := range strings.Split(trimmed, "\n") {
-		if line != "" {
-			return line, nil
-		}
-	}
-	return "", fmt.Errorf("no main package found (expected ./cmd/app or any main package in module)")
 }
 
 func zipSingle(dir, filename, zipPath string) error {
