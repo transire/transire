@@ -132,7 +132,7 @@ func writeCDK(dir string, manifest config.Manifest, layout discover.Layout) erro
 func cdkPackageJSON() string {
 	return `{
   "name": "transire-cdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "bin": {
     "cdk": "cdk/bin/cdk.js"
