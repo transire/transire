@@ -3,7 +3,7 @@ module example.com/transire-hello
 go 1.25.4
 
 require (
-	github.com/go-chi/chi/v5 v5.2.3
+	github.com/go-chi/chi/v5 v5.2.4
 	github.com/transire/transire v0.0.0
 )
 
